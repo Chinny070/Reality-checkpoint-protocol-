@@ -79,6 +79,21 @@ def test_cli_json_string_envelope_parses_without_changing_json_api():
     assert rc._parse_bounded_json('json:[{"claim_id":"C1"}]', "claims") == expected
 
 
+def test_source_cluster_identity_ignores_forged_model_cluster_ids():
+    claims = [{"claim_id": "C1"}]
+    sources = [
+        {"source_id": "S1", "url": "https://news.example.com/a", "claim_ids": ["C1"]},
+        {"source_id": "S2", "url": "https://status.example.com/b", "claim_ids": ["C1"]},
+    ]
+    p = proposal()
+    p["relationships"][0]["cluster_id"] = "attacker-cluster-A"
+    p["relationships"][1]["cluster_id"] = "attacker-cluster-B"
+    normalized = rc._normalize_observation(p, claims, sources)
+    clusters = {r["cluster_id"] for r in normalized["relationships"]}
+    assert clusters == {"domain:example.com"}
+    assert rc._supported_cluster_count(normalized) == 1
+
+
 def test_claim_retrieval_permissions_are_enforced():
     claim = rc._canonical_claims([{"claim_id": "A", "text": "a",
                                    "allowed_retrieval_kinds": ["WEB_RENDER_TEXT"]}])[0]

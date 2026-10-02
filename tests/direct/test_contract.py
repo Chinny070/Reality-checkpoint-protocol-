@@ -13,7 +13,7 @@ CLAIMS = [{
 SOURCES = [
     {"source_id": "S1", "url": "https://status.example.test", "role": "STATUS",
      "retrieval_kind": "WEB_RENDER_TEXT", "declared_owner": "Example", "claim_ids": ["C1"]},
-    {"source_id": "S2", "url": "https://independent.example.test/report", "role": "CORROBORATING",
+    {"source_id": "S2", "url": "https://independent.example.net/report", "role": "CORROBORATING",
      "retrieval_kind": "WEB_GET_TEXT", "declared_owner": "Independent", "claim_ids": ["C1"]},
 ]
 
@@ -31,7 +31,7 @@ def observation(state="SUPPORTED", second="SUPPORTED", divergence="CONSISTENT", 
 
 def setup_contract(direct_deploy, direct_vm, llm_response=None):
     direct_vm.mock_web(r"status\.example\.test", {"status": 200, "body": "Operational"})
-    direct_vm.mock_web(r"independent\.example\.test", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"independent\.example\.net", {"status": 200, "body": "Operational"})
     direct_vm.mock_llm("You are an evidence classifier", llm_response or observation())
     return direct_deploy(CONTRACT)
 
@@ -128,7 +128,7 @@ def test_validator_rejects_changed_independent_observation(direct_deploy, direct
     contract.resolve_checkpoint(cp)
     direct_vm.clear_mocks()
     direct_vm.mock_web(r"status\.example\.test", {"status": 200, "body": "Operational"})
-    direct_vm.mock_web(r"independent\.example\.test", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"independent\.example\.net", {"status": 200, "body": "Operational"})
     direct_vm.mock_llm("You are an evidence classifier", observation("SUPPORTED", "CONTRADICTED", "CONTRADICTORY_REALITY"))
     assert direct_vm.run_validator() is False
 
@@ -148,7 +148,7 @@ def test_revalidation_creates_immutable_successor_and_attributes_delta(direct_de
     original = json.loads(contract.get_checkpoint(cp))
     direct_vm.clear_mocks()
     direct_vm.mock_web(r"status\.example\.test", {"status": 200, "body": "Operational"})
-    direct_vm.mock_web(r"independent\.example\.test", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"independent\.example\.net", {"status": 200, "body": "Operational"})
     direct_vm.mock_llm("You are an evidence classifier", observation(delta="MATERIAL_CHANGE"))
     result = json.loads(contract.revalidate(cp))
     successor = json.loads(contract.get_checkpoint(result["checkpoint_id"]))
@@ -171,7 +171,7 @@ def test_revalidation_failure_preserves_prior_finalized_checkpoint(direct_deploy
     before = json.loads(contract.get_checkpoint(cp))
     direct_vm.clear_mocks()
     direct_vm.mock_web(r"status\.example\.test", {"status": 503, "body": "unavailable"})
-    direct_vm.mock_web(r"independent\.example\.test", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"independent\.example\.net", {"status": 200, "body": "Operational"})
     unavailable = json.loads(observation("UNAVAILABLE", "SUPPORTED", "EXTERNAL_FAILURE"))
     unavailable["external_failure"] = True
     direct_vm.mock_llm("You are an evidence classifier", json.dumps(unavailable))
@@ -194,7 +194,7 @@ def test_challenge_adds_new_source_only_to_successor(direct_deploy, direct_vm):
     contract.resolve_checkpoint(cp)
     direct_vm.clear_mocks()
     direct_vm.mock_web(r"status\.example\.test", {"status": 200, "body": "Operational"})
-    direct_vm.mock_web(r"independent\.example\.test", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"independent\.example\.net", {"status": 200, "body": "Operational"})
     direct_vm.mock_web(r"challenge\.example\.test", {"status": 200, "body": "Incident"})
     challenged = json.loads(observation("SUPPORTED", "CONTRADICTED", "CONTRADICTORY_REALITY"))
     challenged["claims"][0]["source_findings"].append({"source_id": "S3", "state": "CONTRADICTED"})
@@ -218,7 +218,7 @@ def test_inconclusive_challenges_are_still_bounded(direct_deploy, direct_vm):
     contract.resolve_checkpoint(cp)
     direct_vm.clear_mocks()
     direct_vm.mock_web(r"status\.example\.test", {"status": 200, "body": "Operational"})
-    direct_vm.mock_web(r"independent\.example\.test", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"independent\.example\.net", {"status": 200, "body": "Operational"})
     inconclusive = observation("UNKNOWN", "UNKNOWN", "INSUFFICIENT_EVIDENCE")
     direct_vm.mock_llm("You are an evidence classifier", inconclusive)
     for _ in range(3):
@@ -235,7 +235,7 @@ def test_composition_is_deterministic_and_paged(direct_deploy, direct_vm):
     immutable_child_before = contract.get_checkpoint(a)
     direct_vm.clear_mocks()
     direct_vm.mock_web(r"status\.example\.test", {"status": 200, "body": "Operational"})
-    direct_vm.mock_web(r"independent\.example\.test", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"independent\.example\.net", {"status": 200, "body": "Operational"})
     direct_vm.mock_llm("You are an evidence classifier", observation())
     b = contract.create_checkpoint("b", "B", "B?", json.dumps(CLAIMS), json.dumps(SOURCES), 3600, 300, 2)
     contract.resolve_checkpoint(b)

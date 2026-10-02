@@ -10,7 +10,7 @@ The leader reads a frozen copy of the claim/source definition, retrieves each de
 
 ## Validator
 
-`gl.vm.run_nondet(leader, validator)` invokes an independent validator path. It independently retrieves the sources and re-runs the typed classification. The validator rejects malformed results and compares normalized decision fields, including claim state, per-source findings, source relationship/cluster, divergence, delta, and failure status. Rationale prose is discarded.
+`gl.vm.run_nondet(leader, validator)` invokes an independent validator path. It independently retrieves the sources and re-runs the typed classification. The validator rejects malformed results and compares normalized decision fields, including claim state, per-source findings, source relationship, deterministic domain cluster, divergence, delta, and failure status. The model's arbitrary cluster labels are discarded. Rationale prose is discarded.
 
 ## Equivalence
 
@@ -26,4 +26,4 @@ Transport/render exceptions become source-level unavailable evidence. An externa
 
 ## Current limitation
 
-Direct Mode, pickling, GenVM lint, schema, and local semantic validation have passed for this candidate. No hosted consensus transaction has been run. `gl.vm.run_nondet` behavior is documented in the locally cached SDK v0.2.16; the exact deployed chain runtime must be checked before claiming live behavior.
+Direct Mode, pickling, GenVM lint, schema, and local semantic validation have passed for this candidate. The live deployment and transaction evidence are recorded in `RELEASE_VERIFICATION.md`; deployment finality and contract execution success are checked separately because the CLI success banner alone is insufficient.
