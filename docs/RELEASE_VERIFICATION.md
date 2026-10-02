@@ -8,7 +8,7 @@ This record distinguishes reproducible local checks from finalized live-chain ev
 |---|---|---|
 | Python syntax | PASS | `python -m py_compile contracts/reality_checkpoint.py tests/test_protocol.py tests/direct/test_contract.py` |
 | Offline preflight | PASS | `python scripts/preflight.py`; one canonical contract, 10 public API methods |
-| Direct Mode | PASS: 14/14 | `gltest tests/direct/test_contract.py -q` |
+| Direct Mode | PASS: 15/15 | `gltest tests/direct/test_contract.py -q` |
 | Protocol/adversarial tests | PASS: 19/19 | `pytest tests/test_protocol.py -q` |
 | GenVM AST lint | PASS: 3 checks | `genvm-lint check contracts/reality_checkpoint.py` |
 | SDK semantic validation | PASS | `genvm-lint check contracts/reality_checkpoint.py`; GenVM v0.2.16 |
@@ -24,9 +24,9 @@ The first broad `pytest tests -q` invocation is not a valid Direct Mode command:
 |---|---|
 | Branch | `main` |
 | Remote | `https://github.com/Chinny070/Reality-checkpoint-protocol-` |
-| Corrected candidate contract SHA-256 | `fd0969dc0d7b1d9df4b13be0c5de65c91757d5edece3884c6f15f61c4b29f7e2` |
-| Previous deployed contract SHA-256 | `dcf3c321b8d598e24d2d91f6a7c4aae9e0cfd272563dcaf15eb3789e79d4fda7` |
-| Previous deployment parity | Exact local/deployed byte match verified for the previous source; corrected candidate not yet redeployed |
+| Current candidate contract SHA-256 | `450dd5c8c25d22e9ac9922df25f3f2c454015171bab643a9b653cda209156df7` |
+| Deployed source hashes | `fd0969dc0d7b1d9df4b13be0c5de65c91757d5edece3884c6f15f61c4b29f7e2` and earlier `dcf3c321b8d598e24d2d91f6a7c4aae9e0cfd272563dcaf15eb3789e79d4fda7` |
+| Current source deployment parity | Pending: current source adds challenge-attempt source binding and must be redeployed |
 | Previous evidence-record commit | `37f670b1fc62a9fba39344ca71195e6c32dd4f77` |
 | Git metadata | `.gitmeta`; explicit `--git-dir` / `--work-tree` used due inherited `.git` ownership mismatch |
 
@@ -41,7 +41,7 @@ The first broad `pytest tests -q` invocation is not a valid Direct Mode command:
 | GenVM | `SUCCESS` |
 | Consensus | `Accepted` |
 
-A later retry deployed the same previous source at `0xB9f9e09571679e719184b751baf600dec9d5841B` via `0x990390bca0af5773e30e8692224f28ddda05bed2a7b80fbe41f46deedd377907` (FINALIZED, GenVM SUCCESS, MAJORITY_AGREE). This was a diagnostic redeployment before the model-omission defect was found; it is not the corrected candidate deployment.
+The source at SHA-256 `fd0969dc…f7e2` was deployed at `0xdF1BF015f0d6a136Fc8c89020e1F9D122e9aDaEf` via `0x743d95c1b06d18ff885461f36ee9bb989a6e65b7087c753789c93ccda576cf17` (FINALIZED, GenVM SUCCESS, MAJORITY_AGREE); GenLayer CLI source retrieval was byte-identical, and schema contained the expected 10 methods. The current source hash `450dd5c8…56df7` is a follow-up evidence-binding correction and has not yet been deployed.
 
 ## Live protocol transactions
 
@@ -53,6 +53,17 @@ A later retry deployed the same previous source at `0xB9f9e09571679e719184b751ba
 | Render resolution | `0x7799c664640f661294de744ab4dfe09c9dc545436de47cd45c394bbebdb9a390` | FINALIZED; GenVM SUCCESS; MAJORITY_AGREE; WHO + example.com WEB_RENDER_TEXT observations both supported; CONSISTENT |
 | Revalidation | `0xbaffa0523d997fe27d49d73630e222d9fdf78693a329b301f504b547cb486abf` | FINALIZED; GenVM SUCCESS; MAJORITY_AGREE; overall delta UNCHANGED, but WHO UNKNOWN, output PRESERVED_PRIOR (receipt 3), no successor |
 | Corrective candidate diagnostic resolution | `0x3d1106cd30d71883a61cff2a39823aef3f4faf5b057edeeb5476eb226ab7e471` | UNDETERMINED; model omitted a bound source finding; GenVM raised `incomplete source findings`. Corrected candidate now maps missing findings to UNKNOWN and forces the claim UNKNOWN; covered by regression test. This transaction is not a pass. |
+| Corrected-source omitted-finding live resolution | `0x61a54c0da97e68ba2fd4e13767a5a8275aa01fc23138b5f3c0a181e1161ae252` | UNDETERMINED; contract execution SUCCESS returned INCONCLUSIVE when findings/relationships were incomplete, but validators disagreed. No protocol pass claimed. |
+| Corrected-source echo initial checkpoint | `0xbee4150194ff345c8b36120c7ae874e70e31edcb6df28bff2d633021ec38eb11` | FINALIZED; checkpoint ID 2 |
+| Corrected-source echo resolution | `0xd5c38ff421cbfd650c417f1024e4791fbfa5f46b9855173553857326a2a819bc` | FINALIZED; both echo findings SUPPORTED; CONSISTENT; checkpoint 2 finalized |
+| Corrected-source no-change revalidation | `0xd6d91b8c446817bf52f0b6e77e823538248c798445db3d077b55d46f4fbe3878` | FINALIZED; overall/claim delta UNCHANGED; SUCCESSOR_CREATED as checkpoint 3, predecessor 2 |
+| Corrected-source second echo checkpoint | `0xe510d1f99395fd41182307e72c06571e768777b5d9d07fbfdfcaaf3ce759fd16` | FINALIZED; checkpoint ID 4 |
+| Corrected-source second echo resolution | `0xb5ceccf6506db2b4fa21f9d101782eb5e1af8fe4195da4046f0940f982e54688` | FINALIZED; both findings SUPPORTED; checkpoint 4 finalized |
+| Live composite | `0x276905036761a8773a0147511ab6af1814c50c0377cc28da2d63022133dedb24` | FINALIZED; composite checkpoint 5 SUPPORTED/CONSISTENT; children `[3,4]`; certificate FRESH; usable `true` |
+| Corrected-source fork checkpoint | `0xbc605065d4545470b02a78e56de4067e6e28bcc6d3a1755c43959ac2e5a11dab` | FINALIZED; checkpoint ID 6 |
+| Corrected-source fork resolution | `0xe83e278319e95b9890bc799b6c58d7a10636dc2fc0522c9333dcea799ebd650f` | FINALIZED; opposing SUPPORTED/CONTRADICTED findings; DISPUTED/CONTRADICTORY_REALITY; usable `false` |
+| Corrected-source unavailable challenge | `0x7bba240a174fa8beeba606bbdcff3062ee822a552b9dbe35331c31710f33981e` | FINALIZED; challenge output PRESERVED_PRIOR; cp3 remains FINALIZED and usable. Receipt 5 exposed missing claim binding for the appended challenge source; current candidate fixes this and needs re-deployment/live check. |
+| Material-delta revalidation attempt | `0x5822d463ecc56d93b2cb67deeb399e0cab5d96103c5ede6bc99131f4f9998764` | UNDETERMINED because validators disagreed. Not a pass; material delta remains unverified live. |
 
 Explorer transaction links and exact evidence hashes are in `EVIDENCE.md`. The exploratory wrong-ID transaction `0x06be77c3e1ba498655e7a3951808a7a85c49000d84700acfddb845b600f9d537` finalized as `checkpoint not found`; it is excluded from passing proofs.
 
@@ -60,15 +71,15 @@ Explorer transaction links and exact evidence hashes are in `EVIDENCE.md`. The e
 
 | Gate | Status |
 |---|---|
-| Corrected candidate tests, lint, schema | GREEN |
-| Corrected candidate Studionet deployment and source parity | NOT YET VERIFIED |
+| Current candidate tests, lint, schema | GREEN |
+| Current candidate Studionet deployment and source parity | NOT YET VERIFIED |
 | Previous byte-identical source live web-render evidence | GREEN |
 | Previous byte-identical source live Reality Fork Detection and unusable disputed certificate | GREEN |
-| Live no-change revalidation successor | NOT GREEN: prior preserved because WHO classified UNKNOWN |
-| Live material semantic delta | NOT RUN |
-| Live composite checkpoint and cycle rejection | NOT RUN |
-| Live transport failure preserving a prior checkpoint | NOT RUN |
-| Live challenge recovery | NOT RUN |
+| Live no-change revalidation successor | GREEN on source `fd0969dc…f7e2` |
+| Live material semantic delta | NOT GREEN: latest attempt UNDETERMINED |
+| Live composite checkpoint | GREEN on source `fd0969dc…f7e2`; live cycle rejection still not tested |
+| Live transport failure preserving a prior checkpoint | GREEN on source `fd0969dc…f7e2`, via challenge. Added-source claim binding now regression-tested and awaits deployment/live repeat |
+| Live challenge recovery | Not yet demonstrated; only fail-closed preservation was verified |
 | GitHub push | Previous evidence documentation commit pushed; corrected candidate changes require a new push |
 
 The project must not be marked frozen, finalized, or submission-ready while any required live proof above remains incomplete. A failure to meet a live gate is not relabeled as an external connectivity block when the chain is reachable and the attempt yielded a protocol outcome.

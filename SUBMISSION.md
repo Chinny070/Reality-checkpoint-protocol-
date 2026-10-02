@@ -21,19 +21,19 @@ Downstream contracts consume `get_certificate` and `is_checkpoint_usable`; provi
 ## Verified local gates
 
 - Python syntax compilation: passed for contract and both test modules.
-- Direct Mode: 14 passed, 0 failed.
+- Direct Mode: 15 passed, 0 failed.
 - Protocol helper/adversarial logic tests: 19 passed, 0 failed.
 - GenVM AST lint: passed (3 checks; `genvm-lint` 0.11.0).
 - GenVM SDK semantic validation: passed with GenVM v0.2.16.
 - Schema: extracted; 10 methods (5 read-only, 5 write).
 - Direct Mode pickling check: included and passed.
-- Studionet deployment/source parity, a live rendered-evidence checkpoint, and a live Reality Fork proof have been verified; the transaction record is in `docs/RELEASE_VERIFICATION.md`.
+- A previous source hash passed Studionet deployment/source parity, live rendered evidence, a fork proof, no-change revalidation, composition, and challenge failure preservation. The current source adds claim binding to failed challenge evidence and still needs deployment, parity, and a repeat live challenge proof.
 
 ## External gates not verified
 
-- GitHub comparison/push of the final evidence documentation: not yet re-attempted after the preceding transport/authentication issue; local work is kept in the project directory's `.gitmeta` Git database.
-- Live no-change successor: not verified. The finalized revalidation had overall delta `UNCHANGED`, but one claim became `UNKNOWN`, so the prior checkpoint was preserved.
-- Live material delta, composition/cycle rejection, live failure preservation, and challenge recovery: not yet verified on the current deployment.
+- GitHub push for current uncommitted evidence-binding correction: pending commit/push (the previous code/evidence commits pushed successfully).
+- Live no-change successor, composition, fork, and unavailable-challenge prior preservation: passed on the previous source hash; the latest evidence-binding correction requires redeployment and a repeat challenge proof.
+- Live material delta: latest transaction ended `UNDETERMINED` after validator disagreement. Live cycle rejection and challenge recovery are not verified.
 - Owner-portfolio audit: not complete because authenticated GitHub API access is unavailable.
 - Ecosystem collision search: limited to the prompt's named adjacent concepts and current public GenLayer documentation; no exhaustive search is claimed.
 
@@ -49,4 +49,4 @@ Only the specific live passes listed in `docs/EVIDENCE.md` are claimed. The over
 
 ## Portal description draft (verified local facts only)
 
-Reality Checkpoint Protocol is a reusable GenLayer contract for consensus-backed certificates of bounded external state. Validators independently render or fetch evidence and classify claim states, source relationships, divergence, and semantic changes. Deterministic code enforces claim/source bounds, independence floors, freshness, immutable lineage, challenges, composition, and consumer usability. It exposes portable certificates for unrelated downstream contracts. Local verification: 14 Direct Mode tests and 18 protocol/adversarial tests passed; GenVM lint (3 checks), schema extraction (10 methods), and SDK semantic validation passed. Studionet deployment/source parity, real rendered evidence, and fork detection are verified; the complete live transaction matrix is still pending as itemized in the release verification record.
+Reality Checkpoint Protocol is a reusable GenLayer contract for consensus-backed certificates of bounded external state. Validators independently render or fetch evidence and classify claim states, source relationships, divergence, and semantic changes. Deterministic code enforces claim/source bounds, independence floors, freshness, immutable lineage, challenges, composition, and consumer usability. It exposes portable certificates for unrelated downstream contracts. Local verification: 15 Direct Mode tests and 19 protocol/adversarial tests passed; GenVM lint (3 checks), schema extraction (10 methods), and SDK semantic validation passed. The previous deployed source passed live render, fork, supported checkpoint, no-change successor, composition, and unavailable-challenge preservation proofs. The current source includes a follow-up claim-binding correction that requires deployment, parity, and a repeated live challenge before release.

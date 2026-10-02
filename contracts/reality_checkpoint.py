@@ -600,7 +600,8 @@ class RealityCheckpoint(gl.Contract):
         state, divergence = _derive_state(proposal, prior["claims"], prior["minimum_independent_clusters"])
         if state in ("INCONCLUSIVE", "UNAVAILABLE"):
             attempt_id = self._write_nonfinal_attempt(prior, proposal, state, divergence, "CHALLENGE", now,
-                                                      challenge_result="EXTERNAL_FAILURE" if state == "UNAVAILABLE" else "INCONCLUSIVE")
+                                                      challenge_result="EXTERNAL_FAILURE" if state == "UNAVAILABLE" else "INCONCLUSIVE",
+                                                      sources=challenge_ctx.get("sources", prior["sources"]))
             self.challenge_attempts[u256(checkpoint_id)] = u256(prior_attempts + 1)
             return _json({"checkpoint_id": checkpoint_id, "receipt_id": attempt_id, "outcome": "PRESERVED_PRIOR"})
         result = "UPHELD"
@@ -756,8 +757,10 @@ class RealityCheckpoint(gl.Contract):
         return json.loads(self.receipts[u256(cp["latest_receipt_id"])].payload)
 
     def _write_nonfinal_attempt(self, cp: dict[str, Any], proposal: dict[str, Any], state: str,
-                                divergence: str, reason: str, now: int, challenge_result: str = "") -> int:
+                                divergence: str, reason: str, now: int, challenge_result: str = "",
+                                sources: list[dict[str, Any]] | None = None) -> int:
         """Record an unsuccessful observation without superseding a finalized checkpoint."""
+        evidence_sources = sources if sources is not None else cp["sources"]
         self.receipt_count = u256(int(self.receipt_count) + 1)
         receipt_id = int(self.receipt_count)
         deltas = []
@@ -770,8 +773,8 @@ class RealityCheckpoint(gl.Contract):
                            "current_state": claim["state"], "delta": _claim_delta(
                                before, claim["state"], spec.get("criticality", "MAJOR"), claim["delta"],
                                _claim_has_fork(proposal, claim["claim_id"]))})
-        proposal["evidence_receipts"] = _bind_evidence(proposal, cp["checkpoint_id"], cp["sources"])
-        evidence_root = _hash({"receipts": proposal.get("evidence_receipts", []), "source_set_hash": cp["source_set_hash"]})
+        proposal["evidence_receipts"] = _bind_evidence(proposal, cp["checkpoint_id"], evidence_sources)
+        evidence_root = _hash({"receipts": proposal.get("evidence_receipts", []), "source_set_hash": _hash(evidence_sources)})
         receipt = {"receipt_id": receipt_id, "checkpoint_id": cp["checkpoint_id"], "predecessor_id": cp["checkpoint_id"],
                    "reason": reason, "created_at": now, "attempt_status": state,
                    "divergence_status": divergence, "overall_delta": proposal["overall_delta"],

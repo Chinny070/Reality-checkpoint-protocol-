@@ -228,6 +228,30 @@ def test_inconclusive_challenges_are_still_bounded(direct_deploy, direct_vm):
         contract.challenge(cp, "C1", "RECHECK", "Fourth attempt", "")
 
 
+def test_failed_challenge_receipt_binds_added_source_to_claim(direct_deploy, direct_vm):
+    contract = setup_contract(direct_deploy, direct_vm)
+    cp = contract.create_checkpoint("subject", "title", "question", json.dumps(CLAIMS), json.dumps(SOURCES), 3600, 300, 2)
+    contract.resolve_checkpoint(cp)
+    direct_vm.clear_mocks()
+    direct_vm.mock_web(r"status\.example\.test", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"independent\.example\.net", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"challenge\.example\.test", {"status": 503, "body": "unavailable"})
+    failed = json.loads(observation("SUPPORTED", "SUPPORTED", "CONSISTENT"))
+    failed["claims"][0]["source_findings"].append({"source_id": "S3", "state": "UNAVAILABLE"})
+    failed["relationships"].append({"source_id": "S3", "relationship": "INDEPENDENT"})
+    direct_vm.mock_llm("You are an evidence classifier", json.dumps(failed))
+    new_source = {"source_id": "S3", "url": "https://challenge.example.test/report", "role": "CHALLENGE",
+                  "retrieval_kind": "WEB_GET_TEXT", "declared_owner": "New publisher", "claim_ids": ["C1"]}
+    result = json.loads(contract.challenge(cp, "C1", "SOURCE_FAILURE", "Unavailable independent evidence", json.dumps(new_source)))
+    assert result["outcome"] == "PRESERVED_PRIOR"
+    receipt = json.loads(contract.get_receipt(result["receipt_id"]))
+    added = next(x for x in receipt["evidence_receipts"] if x["source_id"] == "S3")
+    assert added["claim_ids"] == ["C1"]
+    assert added["observation_status"] == "EXTERNAL_FAILURE"
+    assert receipt["prior_checkpoint_preserved"] is True
+    assert len(json.loads(contract.get_checkpoint(cp))["sources"]) == 2
+
+
 def test_composition_is_deterministic_and_paged(direct_deploy, direct_vm):
     contract = setup_contract(direct_deploy, direct_vm)
     a = contract.create_checkpoint("a", "A", "A?", json.dumps(CLAIMS), json.dumps(SOURCES), 3600, 300, 2)
