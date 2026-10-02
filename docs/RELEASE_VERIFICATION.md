@@ -1,67 +1,75 @@
 # Release Verification Record
 
-This document separates locally reproducible checks from hosted-network facts. No external result is inferred from a local test.
+This record distinguishes reproducible local checks from finalized live-chain evidence. No status is inferred from an accepted transaction alone.
 
 ## Local candidate
 
 | Gate | Result | Evidence |
 |---|---|---|
 | Python syntax | PASS | `python -m py_compile contracts/reality_checkpoint.py tests/test_protocol.py tests/direct/test_contract.py` |
-| Offline preflight | PASS | `python scripts/preflight.py` |
+| Offline preflight | PASS | `python scripts/preflight.py`; one canonical contract, 10 public API methods |
 | Direct Mode | PASS: 14/14 | `gltest tests/direct/test_contract.py -q` |
-| Protocol/adversarial tests | PASS: 15/15 | `pytest tests/test_protocol.py -q` |
-| Pickling | PASS | Direct test `test_nondeterministic_closures_are_picklable` |
-| GenVM AST lint | PASS: 3 checks | `genvm-lint check contracts/reality_checkpoint.py`; genvm-lint 0.11.0 |
+| Protocol/adversarial tests | PASS: 18/18 | `pytest tests/test_protocol.py -q` |
+| GenVM AST lint | PASS: 3 checks | `genvm-lint check contracts/reality_checkpoint.py` |
 | SDK semantic validation | PASS | `genvm-lint check contracts/reality_checkpoint.py`; GenVM v0.2.16 |
 | ABI/schema extraction | PASS: 10 methods (5 view, 5 write) | `genvm-lint schema contracts/reality_checkpoint.py` |
-| GenVM JSON-specific check | NOT RUN | No JSON-mode command is defined by the installed linter's local CLI |
-| Supplemental type check | NOT RUN | Not required by the installed GenVM workflow |
-| Local-chain integration | NOT RUN | No local Studio/GLSim network started |
+| GenVM JSON-specific check | NOT RUN | Installed linter exposes no JSON-mode command |
+| Local-chain integration | NOT RUN | No local Studio/GLSim node was started |
 
-Python: 3.12.10. `genlayer-test`: 0.29.2. `genlayer-py`: 0.16.3.
+The first broad `pytest tests -q` invocation is not a valid Direct Mode command: it bypassed the GenLayer `gltest` fixture and failed 13 fixture-dependent Direct tests. Running the prescribed `gltest` command passed all 14 Direct tests; the protocol suite passed all 18 tests. Do not count the failed invocation as a candidate regression.
 
-## Hashes and Git
+## Source and Git
 
 | Item | Value |
 |---|---|
-| Initial implementation commit | `b78f4b7bb4282fcda6350a67a62a99bd6ea62691` |
-| Local branch | `main` |
+| Branch | `main` |
 | Remote | `https://github.com/Chinny070/Reality-checkpoint-protocol-` |
-| Starting HEAD | Empty local repository; no prior commit |
-| Commit SHA | `b78f4b7bb4282fcda6350a67a62a99bd6ea62691` (implementation commit) |
-| Contract Git blob SHA | `164cdc7cc3804ed00dd9960a1d3af21f3bcb75b7` |
-| Contract SHA-256 | `ade566d3dea6b78ce316da3755d9f21957824efd8163266f3daec6781be7d1f5` |
-| Working tree after implementation commit | Clean |
-| Push | Not completed; exact transport error below |
+| Contract SHA-256 | `dcf3c321b8d598e24d2d91f6a7c4aae9e0cfd272563dcaf15eb3789e79d4fda7` |
+| Deployment source parity | Exact local/deployed byte match verified before live transactions |
+| Current local commit | See final verification record after the evidence-document commit |
+| Git metadata | `.gitmeta`; explicit `--git-dir` / `--work-tree` used due inherited `.git` ownership mismatch |
 
-Git metadata lives in `.gitmeta` within the authorized project directory because the inherited `.git` metadata has an ownership mismatch and cannot safely be rewritten in this session. Git commands use explicit `--git-dir=.gitmeta --work-tree=.`. No global `safe.directory` setting was changed.
+## Studionet deployment
 
-## Hosted external gates
+| Field | Verified value |
+|---|---|
+| Contract | `0x69570326e3120c2b9EB96Cc471b235b6adE91501` |
+| Deployment tx | `0x3424b0007d4631fc45215ace751c17d61a477bca4c316aba7e5eeca7322453f3` |
+| Explorer | <https://explorer-studio.genlayer.com/tx/0x3424b0007d4631fc45215ace751c17d61a477bca4c316aba7e5eeca7322453f3> |
+| Lifecycle | `FINALIZED` |
+| GenVM | `SUCCESS` |
+| Consensus | `Accepted` |
 
-| Gate | Result | Evidence |
+## Live protocol transactions
+
+| Proof | Transaction(s) | Verified result |
 |---|---|---|
-| GitHub API/push | BLOCKED | Independent connection failure below; no remote write claimed |
-| Studionet deploy | BLOCKED | Studionet transport denied; CLI also requires local keystore unlock (no transaction submitted) |
-| Consensus transactions | NOT RUN | Requires a deployed Studionet contract |
-| Explorer verification | BLOCKED / NOT RUN | Explorer HTTPS TCP probe failed; also requires an actual deployment and transaction |
-| Deployed-source parity | NOT RUN | Requires deployed code/source data |
-| Real live web-render evidence | NOT RUN | Requires a Studionet consensus transaction |
+| Fork checkpoint creation (ID 1) | `0x4d8458b6482e4bdfb1eb131464ee6546ddd3e7265f2850ce052358fe6d4dd0d1` | FINALIZED; GenVM SUCCESS; MAJORITY_AGREE |
+| Fork resolution | `0x529de2378dcb5364700a1abc5171f95c9861ba238caff2752e0950296a3be60a` | FINALIZED; leader SUCCESS; 1 SUPPORTED + 1 CONTRADICTED; DISPUTED / CONTRADICTORY_REALITY |
+| Render checkpoint creation (ID 2) | `0x116785b528e523908d9e7ade567baf2d14d5f5632de77ee7879d759bf497ffda` | FINALIZED; GenVM SUCCESS; MAJORITY_AGREE |
+| Render resolution | `0x7799c664640f661294de744ab4dfe09c9dc545436de47cd45c394bbebdb9a390` | FINALIZED; GenVM SUCCESS; MAJORITY_AGREE; WHO + example.com WEB_RENDER_TEXT observations both supported; CONSISTENT |
+| Revalidation | `0xbaffa0523d997fe27d49d73630e222d9fdf78693a329b301f504b547cb486abf` | FINALIZED; GenVM SUCCESS; MAJORITY_AGREE; overall delta UNCHANGED, but WHO UNKNOWN, output PRESERVED_PRIOR (receipt 3), no successor |
 
-## Independent connectivity retry
+Explorer transaction links and exact evidence hashes are in `EVIDENCE.md`. The exploratory wrong-ID transaction `0x06be77c3e1ba498655e7a3951808a7a85c49000d84700acfddb845b600f9d537` finalized as `checkpoint not found`; it is excluded from passing proofs.
 
-Final independent retry on 2026-10-02 (UTC; work carried out in `C:\Users\USERpc\OneDrive\Desktop\Reality checkpoint`):
+## Submission-gate status
 
-- GitHub `git ls-remote origin HEAD`: `fatal: unable to access 'https://github.com/Chinny070/Reality-checkpoint-protocol-/': Failed to connect to github.com port 443 after 138 ms: Could not connect to server`.
-- GitHub REST API request: `SocketException: An attempt was made to access a socket in a way forbidden by its access permissions. (api.github.com:443)`.
-- GitHub push attempt: same connection failure, after 74 ms. No refs were pushed.
-- `gh auth status`: account `Chinny070` is active in the CLI, but its saved default token is invalid; CLI recommends `gh auth login -h github.com`. Web login was not attempted because HTTPS transport is blocked.
-- Studionet JSON-RPC probe via `scripts/live_verify.py`: `gen_getContractCode network request failed: URLError: <urlopen error [WinError 10013] An attempt was made to access a socket in a way forbidden by its access permissions>`.
-- `Test-NetConnection studio.genlayer.com -Port 443`: DNS resolved `172.67.210.182` and `104.21.53.84`; TCP connect failed to both, `TcpTestSucceeded: False`.
-- Studionet Explorer `explorer-studio.genlayer.com`: DNS resolved the same Cloudflare addresses; `Test-NetConnection` TCP 443 failed to both (`TcpTestSucceeded: False`).
-- GenLayer CLI availability: `genlayer` is installed. `deploy.ps1 -Deploy` passed lint and schema extraction and reached the CLI's keystore prompt; the local unlock attempt returned `Invalid password. Attempt 2/3`. No transaction hash was returned or submitted. The wallet must be unlocked through the local secure CLI flow; no password or key was copied into chat or the repository.
+| Gate | Status |
+|---|---|
+| Local tests, lint, schema | GREEN |
+| Studionet deployment and source parity | GREEN |
+| Live web-render evidence | GREEN |
+| Live Reality Fork Detection and unusable disputed certificate | GREEN |
+| Live no-change revalidation successor | NOT GREEN: prior preserved because WHO classified UNKNOWN |
+| Live material semantic delta | NOT RUN |
+| Live composite checkpoint and cycle rejection | NOT RUN |
+| Live transport failure preserving a prior checkpoint | NOT RUN |
+| Live challenge recovery | NOT RUN |
+| GitHub push of final evidence documentation | Pending final commit/push attempt |
 
-Do not paste a token or private key into this document. If GitHub token refresh is needed, use `gh auth login --web` after connectivity returns.
+The project must not be marked frozen, finalized, or submission-ready while any required live proof above remains incomplete. A failure to meet a live gate is not relabeled as an external connectivity block when the chain is reachable and the attempt yielded a protocol outcome.
 
-## Clean checkout portability
+## Connectivity and wallet notes
 
-The initial clean local bundle clone exposed Windows checkout line-ending conversion for the Python contract. `.gitattributes` now pins LF for protocol source and documentation. A fresh bundle clone must reproduce the contract SHA-256 exactly before release; see the final local verification below.
+Earlier independent retries showed GitHub HTTPS transport denied by the Windows/network sandbox and an expired saved `gh` token. GitHub connectivity/authentication should be retried separately before final push. Studionet became reachable with the permitted elevated network call. The local keystore was unlocked by the user through GenLayer CLI's secure prompt; no wallet secret was copied into chat or the repository.
+
