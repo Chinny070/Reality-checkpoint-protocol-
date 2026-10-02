@@ -73,6 +73,12 @@ def test_duplicate_claim_and_source_ids_rejected():
         assert False, "duplicate claim accepted"
 
 
+def test_cli_json_string_envelope_parses_without_changing_json_api():
+    expected = [{"claim_id": "C1"}]
+    assert rc._parse_bounded_json('[{"claim_id":"C1"}]', "claims") == expected
+    assert rc._parse_bounded_json('json:[{"claim_id":"C1"}]', "claims") == expected
+
+
 def test_claim_retrieval_permissions_are_enforced():
     claim = rc._canonical_claims([{"claim_id": "A", "text": "a",
                                    "allowed_retrieval_kinds": ["WEB_RENDER_TEXT"]}])[0]

@@ -105,6 +105,10 @@ def _bounded_text(value: Any, limit: int, field: str) -> str:
 
 
 def _parse_bounded_json(payload: str, field: str) -> Any:
+    # `genlayer` CLI's argument parser treats top-level JSON arrays/objects as
+    # calldata containers. Prefix JSON strings with `json:` when using the CLI.
+    if isinstance(payload, str) and payload.startswith("json:"):
+        payload = payload[5:]
     if not isinstance(payload, str) or not payload or len(payload.encode("utf-8")) > MAX_DEFINITION_BYTES:
         raise gl.vm.UserError(f"invalid {field} payload")
     try:
