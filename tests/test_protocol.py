@@ -129,6 +129,12 @@ def test_opposite_source_assertions_force_reality_fork():
     assert (state, divergence) == ("DISPUTED", "CONTRADICTORY_REALITY")
 
 
+def test_model_fork_label_without_opposing_source_findings_fails_closed():
+    p = proposal(findings=("SUPPORTED", "SUPPORTED"), divergence="CONTRADICTORY_REALITY")
+    state, divergence = rc._derive_state(p, [{"claim_id": "C1", "required_independent_clusters": 1}], 1)
+    assert (state, divergence) == ("INCONCLUSIVE", "INSUFFICIENT_EVIDENCE")
+
+
 def test_same_owner_urls_do_not_corroborate():
     p = proposal(rels=("SAME_OWNER", "SYNDICATED"))
     assert rc._supported_cluster_count(p) == 0

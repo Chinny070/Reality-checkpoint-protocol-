@@ -361,10 +361,12 @@ def _supported_cluster_count(observation: dict[str, Any]) -> int:
 def _derive_state(observation: dict[str, Any], claims: list[dict[str, Any]], minimum_clusters: int = 1) -> tuple[str, str]:
     if observation["external_failure"] or observation["divergence"] == "EXTERNAL_FAILURE":
         return "UNAVAILABLE", "EXTERNAL_FAILURE"
-    if observation["divergence"] == "CONTRADICTORY_REALITY" or any(
-        _claim_has_fork(observation, c["claim_id"]) for c in observation["claims"]
-    ):
+    if any(_claim_has_fork(observation, c["claim_id"]) for c in observation["claims"]):
         return "DISPUTED", "CONTRADICTORY_REALITY"
+    if observation["divergence"] == "CONTRADICTORY_REALITY":
+        # A model label is not evidence of a fork. Without opposing source
+        # findings, reject the label and fail closed as insufficient evidence.
+        return "INCONCLUSIVE", "INSUFFICIENT_EVIDENCE"
     if observation["divergence"] == "MATERIAL_DIVERGENCE":
         return "DISPUTED", observation["divergence"]
     if observation["divergence"] in ("INSUFFICIENT_EVIDENCE", "INSUFFICIENT_INDEPENDENCE"):
