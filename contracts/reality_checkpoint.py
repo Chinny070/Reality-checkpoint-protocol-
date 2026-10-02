@@ -291,8 +291,16 @@ def _normalize_observation(raw: Any, expected_claims: list[dict[str, Any]], expe
                 raise ValueError("invalid source finding state")
             clean_findings.append({"source_id": finding["source_id"], "state": fs})
         expected_for_claim = {s["source_id"] for s in expected_sources if claim["claim_id"] in s.get("claim_ids", [])}
-        if seen_findings != expected_for_claim:
-            raise ValueError("incomplete source findings")
+        if not seen_findings.issubset(expected_for_claim):
+            raise ValueError("source finding not bound to claim")
+        # A model omission is missing evidence, never implicit support and not
+        # a contract execution failure. Retrieval failures are deterministically
+        # upgraded to UNAVAILABLE by _observe_sources after normalization.
+        missing_findings = expected_for_claim - seen_findings
+        clean_findings.extend({"source_id": source_id, "state": "UNKNOWN"}
+                              for source_id in sorted(missing_findings))
+        if missing_findings:
+            state = "UNKNOWN"
         claim_delta = claim.get("delta")
         if claim_delta not in DELTAS:
             raise ValueError("invalid claim semantic delta")

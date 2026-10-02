@@ -23,7 +23,7 @@ python scripts/live_verify.py --address 0x... --deployment-tx 0x...
 
 It writes the raw lifecycle result, schema method comparison, and local/deployed source SHA-256 values to ignored `artifacts/live-verification.json`. It exits nonzero when source bytes or schema methods differ. It does not deploy or create protocol checkpoints; the live transaction matrix still requires independently recorded write transactions and Explorer evidence.
 
-## Verified Studionet candidate (2026-10-02)
+## Previous Studionet deployment (2026-10-02)
 
 The current canonical deployment was submitted to Studionet and verified in Explorer:
 
@@ -31,9 +31,9 @@ The current canonical deployment was submitted to Studionet and verified in Expl
 - Deployment transaction: `0x3424b0007d4631fc45215ace751c17d61a477bca4c316aba7e5eeca7322453f3`
 - Explorer: <https://explorer-studio.genlayer.com/tx/0x3424b0007d4631fc45215ace751c17d61a477bca4c316aba7e5eeca7322453f3>
 - Explorer lifecycle: `FINALIZED`; GenVM `SUCCESS`; consensus `Accepted`.
-- Local and deployed contract bytes were compared and matched (SHA-256 `dcf3c321b8d598e24d2d91f6a7c4aae9e0cfd272563dcaf15eb3789e79d4fda7`).
+- Local and deployed contract bytes matched at the time (SHA-256 `dcf3c321b8d598e24d2d91f6a7c4aae9e0cfd272563dcaf15eb3789e79d4fda7`).
 
-Live transactions and current proof boundaries are recorded in `RELEASE_VERIFICATION.md` and `EVIDENCE.md`. The source-fork and real rendered-evidence proofs finalized on this deployment. The later revalidation finalized as `PRESERVED_PRIOR` because one claim became `UNKNOWN`, despite `overall_delta=UNCHANGED`; this is not a no-change successor proof. Composition, material-change successor, live challenge recovery, and live failure-preservation remain unverified on this deployment. Do not infer them from the local tests or the older deployment.
+That source passed live fork and rendered-evidence transactions but later exhibited a model-output omission error on another rendered resolution. The code now maps missing bound source findings to `UNKNOWN`, forces the affected claim to `UNKNOWN`, and has a regression test. Corrected candidate source hash is `fd0969dc0d7b1d9df4b13be0c5de65c91757d5edece3884c6f15f61c4b29f7e2`; it must be redeployed and parity-checked before its live proofs can count. See `RELEASE_VERIFICATION.md` and `EVIDENCE.md` for transaction details. The prior revalidation finalized as `PRESERVED_PRIOR` because one claim became `UNKNOWN`, despite `overall_delta=UNCHANGED`; this is not a no-change successor proof. Composition, material-change successor, live challenge recovery, and live failure-preservation remain unverified.
 
 ## Required live proofs
 

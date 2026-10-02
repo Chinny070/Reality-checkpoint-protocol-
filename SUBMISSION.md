@@ -22,7 +22,7 @@ Downstream contracts consume `get_certificate` and `is_checkpoint_usable`; provi
 
 - Python syntax compilation: passed for contract and both test modules.
 - Direct Mode: 14 passed, 0 failed.
-- Protocol helper/adversarial logic tests: 18 passed, 0 failed.
+- Protocol helper/adversarial logic tests: 19 passed, 0 failed.
 - GenVM AST lint: passed (3 checks; `genvm-lint` 0.11.0).
 - GenVM SDK semantic validation: passed with GenVM v0.2.16.
 - Schema: extracted; 10 methods (5 read-only, 5 write).

@@ -53,7 +53,7 @@ GenVM semantic validation uses the version resolved by `genvm-lint`; the release
 
 ## Status
 
-Local implementation gates are green: Direct Mode and protocol/adversarial suites, GenVM lint, schema extraction, and local Python compilation passed. The contract is deployed on Studionet with verified source parity. Live rendered-source evidence and Reality Fork Detection have finalized successfully. Other required live gates remain incomplete; in particular, revalidation preserved the prior after one claim became unknown, and no live composition proof has passed. See [docs/RELEASE_VERIFICATION.md](docs/RELEASE_VERIFICATION.md) for transaction-level status. Do not treat this candidate as finalized or submission-ready until the remaining required gates are green.
+Local implementation gates are green: Direct Mode and protocol/adversarial suites, GenVM lint, schema extraction, and local Python compilation passed. Earlier byte-identical source has passed live rendered-evidence and Reality Fork proofs. A later live resolution exposed an omitted-model-finding error, now fixed and covered by regression tests. The corrected source still needs deployment and its live proof matrix. See [docs/RELEASE_VERIFICATION.md](docs/RELEASE_VERIFICATION.md) for exact version boundaries. Do not treat this candidate as deployed, finalized, or submission-ready until corrected-source parity and remaining live gates are green.
 
 ## Repository
 

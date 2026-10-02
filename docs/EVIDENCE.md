@@ -8,7 +8,9 @@ Transport/render failure creates an explicit external-failure observation. It mu
 
 ## Studionet verification record (2026-10-02)
 
-Canonical contract: `0x69570326e3120c2b9EB96Cc471b235b6adE91501`.
+These transactions were run against source hash `dcf3c321b8d598e24d2d91f6a7c4aae9e0cfd272563dcaf15eb3789e79d4fda7`, which matched the deployed bytes. They remain valid evidence for that exact source version. A later transaction exposed a missing-model-finding execution error; the corrected candidate has SHA-256 `fd0969dc0d7b1d9df4b13be0c5de65c91757d5edece3884c6f15f61c4b29f7e2` and must be redeployed and live-verified before these results are attributed to it.
+
+Contract used for the successful fork/render transactions: `0x69570326e3120c2b9EB96Cc471b235b6adE91501`.
 
 ### Initial live render
 
@@ -38,3 +40,5 @@ Canonical contract: `0x69570326e3120c2b9EB96Cc471b235b6adE91501`.
 ### Out-of-scope failed transaction
 
 An extra resolution transaction `0x06be77c3e1ba498655e7a3951808a7a85c49000d84700acfddb845b600f9d537` targeted checkpoint ID 6 instead of the newly created ID 1. It finalized with `checkpoint not found`; it is a test-driver argument error, not evidence of successful execution or a contract defect. The correctly addressed ID 1 transaction above passed.
+
+The later diagnostic deployment `0xB9f9e09571679e719184b751baf600dec9d5841B` used the same previous source. Its initial rendered resolution `0x3d1106cd30d71883a61cff2a39823aef3f4faf5b057edeeb5476eb226ab7e471` is `UNDETERMINED`: Explorer shows GenVM `ERROR`, traceback `ValueError: incomplete source findings`. The validator/model omitted a source finding. The corrected code fills omissions as `UNKNOWN` and makes the aggregate claim `UNKNOWN`, which fails closed without turning expected model variability into a contract runtime exception. The fix is locally tested but not yet deployed.

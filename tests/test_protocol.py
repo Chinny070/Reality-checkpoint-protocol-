@@ -129,6 +129,22 @@ def test_opposite_source_assertions_force_reality_fork():
     assert (state, divergence) == ("DISPUTED", "CONTRADICTORY_REALITY")
 
 
+def test_omitted_bound_source_finding_becomes_unknown_not_contract_error():
+    claims = [{"claim_id": "C1", "text": "operational"}]
+    sources = [
+        {"source_id": "S1", "url": "https://one.example.com", "claim_ids": ["C1"]},
+        {"source_id": "S2", "url": "https://two.example.net", "claim_ids": ["C1"]},
+    ]
+    p = proposal()
+    p["claims"][0]["source_findings"] = [{"source_id": "S1", "state": "SUPPORTED"}]
+    normalized = rc._normalize_observation(p, claims, sources)
+    findings = {x["source_id"]: x["state"] for x in normalized["claims"][0]["source_findings"]}
+    assert findings == {"S1": "SUPPORTED", "S2": "UNKNOWN"}
+    assert normalized["claims"][0]["state"] == "UNKNOWN"
+    state, divergence = rc._derive_state(normalized, [{"claim_id": "C1", "required_independent_clusters": 1}], 1)
+    assert (state, divergence) == ("INCONCLUSIVE", "CONSISTENT")
+
+
 def test_model_fork_label_without_opposing_source_findings_fails_closed():
     p = proposal(findings=("SUPPORTED", "SUPPORTED"), divergence="CONTRADICTORY_REALITY")
     state, divergence = rc._derive_state(p, [{"claim_id": "C1", "required_independent_clusters": 1}], 1)

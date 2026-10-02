@@ -10,7 +10,7 @@ The leader reads a frozen copy of the claim/source definition, retrieves each de
 
 ## Validator
 
-`gl.vm.run_nondet(leader, validator)` invokes an independent validator path. It independently retrieves the sources and re-runs the typed classification. The validator rejects malformed results and compares normalized decision fields, including claim state, per-source findings, source relationship, deterministic domain cluster, divergence, delta, and failure status. The model's arbitrary cluster labels are discarded. Rationale prose is discarded.
+`gl.vm.run_nondet(leader, validator)` invokes an independent validator path. It independently retrieves the sources and re-runs the typed classification. The validator rejects unknown/forged IDs and malformed decision fields, then compares normalized claim state, per-source findings, source relationship, deterministic domain cluster, divergence, delta, and failure status. Missing source findings are inserted as `UNKNOWN` and force the affected claim to `UNKNOWN`; they cannot be omitted to claim support or hide a fork. Confirmed retrieval failures are then deterministically marked `UNAVAILABLE`. The model's arbitrary cluster labels are discarded. Rationale prose is discarded.
 
 ## Equivalence
 
