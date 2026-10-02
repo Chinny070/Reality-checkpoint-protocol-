@@ -1,0 +1,4 @@
+version: 1
+name: reality-checkpoint-protocol
+contract: contracts/reality_checkpoint.py
+network: studionet
