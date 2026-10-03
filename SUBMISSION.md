@@ -21,20 +21,19 @@ Downstream contracts consume `get_certificate` and `is_checkpoint_usable`; provi
 ## Verified local gates
 
 - Python syntax compilation: passed for contract and both test modules.
-- Direct Mode: 15 passed, 0 failed.
-- Protocol helper/adversarial logic tests: 22 passed, 0 failed.
+- Direct Mode: 17 passed, 0 failed.
+- Protocol helper/adversarial logic tests: 23 passed, 0 failed.
 - GenVM AST lint: passed (3 checks; `genvm-lint` 0.11.0).
 - GenVM SDK semantic validation: passed with GenVM v0.2.16.
 - Schema: extracted; 10 methods (5 read-only, 5 write).
 - Direct Mode pickling check: included and passed.
-- Deployed source `c184f679…b340c4` has byte-identical parity and live supported-state and failed-challenge preservation proofs. Its time-based revalidation exposed a model-insufficiency-label precedence issue; current local candidate `133bec36…c49bace` fixes it and passes 22 protocol tests. It awaits deployment, parity, and repeat live semantic-delta proof. Earlier deployments passed rendered evidence, fork, no-change successor, and composition proofs.
+- Current source `386103fd…18f9cbf0` is deployed with byte-identical parity. On this exact source, live semantic revalidation created a contradiction successor, unavailable challenge preserved its parent, render retrievals were recorded (WHO claim UNKNOWN), composition was fresh/usable, and a reality fork was disputed/unusable. Exact proof bounds and transaction evidence are in `docs/EVIDENCE.md`.
 
 ## External gates not verified
 
-- GitHub push for current candidate: pending commit/push.
-- Live no-change successor, composition, and fork: passed on earlier byte-identical source versions; current candidate has not yet repeated each proof.
-- Live material delta: latest transaction ended `UNDETERMINED` after validator disagreement. Live cycle rejection and challenge recovery are not verified.
-- Owner-portfolio audit: not complete because authenticated GitHub API access is unavailable.
+- GitHub push for latest documentation and helper changes: pending local commit/push.
+- Live future/self reference rejection finalized with `checkpoint not found`; immutable finalized-child DAG prevents back-edge insertion. Challenge recovery after a failed attempt is not demonstrated.
+- Owner-portfolio audit: still to complete against authenticated GitHub access.
 - Ecosystem collision search: limited to the prompt's named adjacent concepts and current public GenLayer documentation; no exhaustive search is claimed.
 
 ## Evidence fields
@@ -49,4 +48,4 @@ Only the specific live passes listed in `docs/EVIDENCE.md` are claimed. The over
 
 ## Portal description draft (verified local facts only)
 
-Reality Checkpoint Protocol is a reusable GenLayer contract for consensus-backed certificates of bounded external state. Validators independently render or fetch evidence and classify claim states, source relationships, divergence, and semantic changes. Deterministic code enforces claim/source bounds, independence floors, freshness, immutable lineage, challenges, composition, and consumer usability. It exposes portable certificates for unrelated downstream contracts. Local verification: 15 Direct Mode tests and 22 protocol/adversarial tests passed; GenVM lint (3 checks), schema extraction (10 methods), and SDK semantic validation passed. The deployed source `c184f679…b340c4` is parity-verified and has live supported-state and failed-challenge preservation proofs; current candidate `133bec36…c49bace` addresses insufficiency-label precedence and awaits deployment/live proof. Earlier hashes passed render, fork, no-change successor, and composition proofs.
+Reality Checkpoint Protocol is a reusable GenLayer contract for consensus-backed certificates of bounded external state. Validators independently render or fetch evidence and classify claim states, source relationships, divergence, and semantic changes. Deterministic code enforces claim/source bounds, independence floors, freshness, immutable lineage, challenges, composition, and consumer usability. It exposes portable certificates for unrelated downstream contracts. Local verification: 17 Direct Mode tests and 23 protocol/adversarial tests passed; GenVM lint (3 checks), schema extraction (10 methods), and SDK semantic validation passed. Current source `386103fd…18f9cbf0` is deployed and parity-verified. Source-specific live evidence is summarized in `docs/EVIDENCE.md`.

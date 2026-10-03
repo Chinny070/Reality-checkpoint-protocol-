@@ -52,6 +52,10 @@ const hash = await client.writeContract({
 console.log(JSON.stringify({ submitted: true, hash, account: account.address, method }));
 const receipt = await client.waitForTransactionReceipt({ hash, status: "FINALIZED", retries, interval, fullTransaction: true });
 console.log(JSON.stringify({ finalized: true, receipt }, (_, value) => typeof value === "bigint" ? value.toString() : value, 2));
-if (receipt.txExecutionResultName && receipt.txExecutionResultName !== "FINISHED_WITH_RETURN") {
+const lifecycle = receipt.statusName ?? receipt.status_name;
+const consensusResult = receipt.result_name ?? receipt.resultName;
+const leaders = receipt.consensus_data?.leader_receipt ?? receipt.consensusData?.leaderReceipt ?? [];
+const leader = leaders.find((entry) => entry.mode === "leader");
+if (lifecycle !== "FINALIZED" || consensusResult !== "MAJORITY_AGREE" || leader?.execution_result !== "SUCCESS") {
   process.exitCode = 2;
 }

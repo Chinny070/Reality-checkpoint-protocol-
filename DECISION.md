@@ -21,6 +21,8 @@ Closest public implementations reviewed:
 
 This search is not exhaustive across all GenLayer submissions or repositories. It supports a bounded differentiation claim; it does not establish novelty or exclusivity.
 
+Additional current public search results reviewed include [Lumen](https://github.com/ldkfj/Lumen), an evidence-bound registry checking public AI performance claims against a fixed benchmark record; [GenLayer Intelligent Oracle](https://github.com/genlayerlabs/intelligent-oracle), a prediction-market resolution application; and [internetcourt](https://github.com/genlayer-foundation/internetcourt), a cross-chain evidence dispute and escrow workflow. Their unit of decision is respectively a scoped benchmark claim, a market outcome, and a submitted dispute. RCP's center is an evolving, multi-claim state graph with independent-source floors, typed forks, semantic successor receipts, deterministic composition, freshness, and a portable certificate. This is a feature-level differentiation assessment based on public descriptions, not an implementation-level exhaustive audit.
+
 ## Closest primitives and differentiation
 
 | Primitive | Core question | RCP distinction |
@@ -48,4 +50,4 @@ The hardest risk is obtaining stable substantive agreement from independently re
 
 ## Status and limits
 
-The local GenVM static validation passed for the current candidate; no live Studionet consensus or deployment has been performed. This is not an exhaustive novelty or owner-portfolio finding. See `SUBMISSION.md` for external gates.
+Local tests, GenVM lint, schema extraction, SDK semantic validation, and Studionet deployment/source parity for source `386103fd…18f9cbf0` have passed. Current-source live successor, challenge-failure preservation, WEB_RENDER_TEXT retrieval, composition, fork, and future/self-reference rejection transactions are recorded in `docs/EVIDENCE.md`. A fully supported WHO render claim and post-failure challenge recovery remain unproven. The complete owner-portfolio review is blocked because the authenticated GitHub API returns a socket permission error and the cached `gh` token is invalid. Ecosystem and owner searches are not exhaustive; see `SUBMISSION.md` for remaining gates.

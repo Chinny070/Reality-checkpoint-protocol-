@@ -62,3 +62,54 @@ The later diagnostic deployment `0xB9f9e09571679e719184b751baf600dec9d5841B` use
 - Unavailable-source challenge tx `0xd1dfb3b11ed349107aa60bcf21796d89a2100b3b53536878a19466dc6621b94b`; finalized `PRESERVED_PRIOR`; attempt receipt 2 is UNAVAILABLE / EXTERNAL_FAILURE and its source S3 evidence receipt has `claim_ids:["C1"]`, `observation_status:EXTERNAL_FAILURE`. Checkpoint 1 remains FINALIZED/SUPPORTED with the original two-source definition.
 
 The live material-delta attempt against the previous source was UNDETERMINED after validator disagreement; no material-change PASS is claimed for this source.
+
+## Canonical source `386103fd…18f9cbf0`
+
+Canonical source SHA-256: `386103fd111f6280b94f78a9508084e1ba72503d1d7824de5189d75218f9cbf0`. Deployment tx `0xc953efe708125c4bec7669398e368c9f84184e1fb392638b80cec279073166c6` finalized with MAJORITY_AGREE / GenVM SUCCESS at `0xDc01B2807A2D9285C9F9359930b8076ac89d6688`. CLI-exported source is byte-identical (53,413 bytes), and live schema has 10 methods. Explorer: <https://explorer-studio.genlayer.com/tx/0xc953efe708125c4bec7669398e368c9f84184e1fb392638b80cec279073166c6>.
+
+### Live material delta / successor
+
+- Supported clock checkpoint 1: create `0xdd8c25be9cbb8d3a201248cbe7fdc6725ad9ce06a5d0597d283e342c6938dea0`; resolve `0x337a8f02c29c8634f2504c794e8db238c367f380b9a2453c15bdf8123c3e9dd8`. Both finalized MAJORITY_AGREE / GenVM SUCCESS; resolved SUPPORTED before cutoff.
+- Post-cutoff revalidation: `0x65d8fbcad50b90d3391a00234d6696d57f2e25d0e182b822ea0c77192f3185d5`, FINALIZED / MAJORITY_AGREE / leader SUCCESS. Returned `SUCCESSOR_CREATED`, receipt 2, successor checkpoint 2 with predecessor 1. Both sources were OBSERVED and independently clustered. Prior SUPPORTED state became current CONTRADICTED; per-claim and overall delta were `CONTRADICTION`. Successor status DISPUTED, divergence CONSISTENT, FRESH, and unusable. This is a material state-change/successor proof; the two evidence hashes were Postman `ca0c2a3b4c84dded98938ad45b7070d1bfc57396a31c2a5ad536a65ff6a5eccd` and TimeAPI `87e6de1e6f3481a9e4fbf9b29faffa80060b2cdbcfb31990482950d7dc0607fe`.
+- Explorer: <https://explorer-studio.genlayer.com/tx/0x65d8fbcad50b90d3391a00234d6696d57f2e25d0e182b822ea0c77192f3185d5>.
+
+### Fail-closed challenge
+
+- Challenge against checkpoint 2: `0xbe0babe0a18ec648717b870b5a24ae0cc19ddc19e86948efc33f1898016922ca`, FINALIZED. The `.invalid` source produced attempt status UNAVAILABLE / challenge result EXTERNAL_FAILURE. Attempt receipt 3 binds source S3 to claim C1 and marks observation EXTERNAL_FAILURE; `prior_checkpoint_preserved=true`. Re-read confirmed parent checkpoint 2 unchanged (DISPUTED, version 2, original source set only). No recovery success is claimed.
+- Explorer: <https://explorer-studio.genlayer.com/tx/0xbe0babe0a18ec648717b870b5a24ae0cc19ddc19e86948efc33f1898016922ca>.
+
+### WEB_RENDER_TEXT evidence
+
+- Checkpoint 3 create `0x39da9b59be73c918ce42a498862e4b1c9b3779c4d187a69622c40904fc2baa06`; resolution `0xd919e2688908de351a3af48312e4d87ad91ff709f164d31bd097bb5db7173e05`, FINALIZED / MAJORITY_AGREE / GenVM SUCCESS.
+- WHO page and example.com were actually retrieved with WEB_RENDER_TEXT; observations were OBSERVED and externalFailure=false. WHO claim C1 was UNKNOWN; example.com claim C2 SUPPORTED. Overall checkpoint was INCONCLUSIVE with `INSUFFICIENT_INDEPENDENCE`; this verifies live render retrieval and bound evidence, not a fully supported render checkpoint.
+- WHO content/render hash `f60fe91a4a6211e0644d9dd232c680c4898190ee65b834c4c8eec2932cb87f2e`; example.com content/render hash `aa8c4320fabb468930b605f5f365b1beaf2ac42b081eed50083e26d26cb3c159`.
+- Explorer: <https://explorer-studio.genlayer.com/tx/0xd919e2688908de351a3af48312e4d87ad91ff709f164d31bd097bb5db7173e05>.
+
+### Composition and fork
+
+- Echo checkpoint 4 create/resolve: `0xf10fae4ec18337d73572d2203328c5b55d90bb67b8f7be7375e91606c05e58c0` / `0x0a6366e5c94f5a42af08362323daf565f94bb3a6ad368c2018548c835d68349a`.
+- Echo checkpoint 5 create/resolve: `0x6034417efc8cb2309eb458807ccfadbc75c40daef5f2a96b78a82de3467dc763` / `0x2d6d02262118b706de07c084af9abf7ffad7632195f95ee6587b040a8aa326cc`. Both child checkpoints finalized SUPPORTED / CONSISTENT and usable.
+- Composite transaction `0x7d37cda9b0f430dd4a146034b2539c75d3e4d0fa1ea954833956485c888b289d`, FINALIZED. Checkpoint 6 references children and ancestors `[4,5]`, state SUPPORTED / CONSISTENT, certificate FRESH, usable true. Explorer: <https://explorer-studio.genlayer.com/tx/0x7d37cda9b0f430dd4a146034b2539c75d3e4d0fa1ea954833956485c888b289d>.
+- Fork checkpoint 7 create `0x346f529e2a417a61bbeb5009c56f9715edcef8e9d2fcd1fe97e40c07df3b1a33`; resolve `0xedf6a826f58965418d9a4ccd06e6b04f0a88fd87f8a003ad04ab755ddf143707`, FINALIZED / MAJORITY_AGREE. Postman `foo1=Hello` was SUPPORTED (hash `515bbcf3f68a6d70cd49651cfbad5a47594e73bf8d1f45dec8ba37d2481cfdae`); HTTPBin `foo1=World` was CONTRADICTED (hash `02a3d81585ed25ca306a8e4cb5306be454b97c5e3743702811784528b969e958`). Result DISPUTED / CONTRADICTORY_REALITY, certificate FRESH, unusable, no external failure. Explorer: <https://explorer-studio.genlayer.com/tx/0xedf6a826f58965418d9a4ccd06e6b04f0a88fd87f8a003ad04ab755ddf143707>.
+
+### Future/self reference rejection
+
+- Attempted to create a composite with prospective checkpoint ID 8 in its child list when only seven checkpoints existed: `0x3d35610730955ccc5653ae28c2e762f12782ff896b074ae5bb74ecacb436da6e`, FINALIZED / MAJORITY_AGREE with validator execution ERROR `checkpoint not found`. It created no checkpoint and changed no state. This demonstrates rejection of a future/self reference; it is not reported as a separate explicit graph-cycle detector test.
+
+## Current proof boundary
+
+The transaction matrix for each deployed hash is source-version-specific. Current source `386103fd…18f9cbf0` has passed successor semantic contradiction, fail-closed challenge preservation, live WEB_RENDER_TEXT retrieval, supported composition, fork detection, and future/self-reference rejection. The WHO semantic claim remained UNKNOWN in the render proof. Challenge recovery after a failed challenge has not been demonstrated. Do not upgrade either limitation to a pass.
+
+## Revised source `133bec360911bb5cc4cfdef32330bcadb13e61c74a92b1f3bd9641d04c49bace`
+
+- Commit: `52395adef1f12655c74500e639b694fca2774b40`; pushed to `main`.
+- Deployment transaction `0xcac440da626a08a2c709340f10ef6f7d9008ff36c097d2ae6821de381d82e943`; contract `0x2dFBBB86bcfc85493732AcA9e028e570a41D6a7A`; FINALIZED, GenVM SUCCESS, MAJORITY_AGREE. Explorer: <https://explorer-studio.genlayer.com/tx/0xcac440da626a08a2c709340f10ef6f7d9008ff36c097d2ae6821de381d82e943>.
+- CLI-exported contract source is byte-identical: 53,501 bytes; local and deployed SHA-256 `133bec360911bb5cc4cfdef32330bcadb13e61c74a92b1f3bd9641d04c49bace`. The live schema contains the expected ten methods.
+- Time-bound checkpoint 1 creation `0xac1447bf2ddd6215c7e29c34f69ba89a138d20893f042f512cdc44cfe8611b43` and initial resolution `0x21348e9703d2f043ebaa9b30c191f4f163e050c9c7eae153fee230c05b23047c` both FINALIZED, GenVM SUCCESS, MAJORITY_AGREE. Resolution returned FINALIZED, state SUPPORTED, divergence CONSISTENT, receipt 1. Postman Echo and TimeAPI were OBSERVED and independently clustered as `domain:postman-echo.com` and `domain:timeapi.io`; their evidence content hashes are `648bd36c011fc4544afff92818a644d2f2ed31e94f7ff13b8b9a84e97ef5c313` and `fb1e3b9b90b84c1612ee82f71a950043ba4df2a75a10d0c9bba090d3607cf5dc`.
+- The matching post-cutoff revalidation has not yet been submitted; no material-delta or successor pass is claimed here.
+
+## Prior deployed source `c184f679…b340c4`: material-delta diagnostic
+
+- Initial clock checkpoint create `0x37bddeb00c4a963b76071880613f96f7cc4320307fc463d4207d9cd8b076f358` and resolve `0x7ad1a11086390b66f1cdf26ab30a5b08e455221321277827d98b08f3d0910fbe` finalized; checkpoint 1 was SUPPORTED/CONSISTENT with both clock sources observed.
+- Post-cutoff revalidation `0xdac1f12388515850381e83b6d9fd65660397275dd4691cc8698e8e51ffe1e783` finalized MAJORITY_AGREE. Receipt 2 had both independent findings CONTRADICTED and claim delta CONTRADICTION, but the model's `INSUFFICIENT_EVIDENCE` divergence label led the contract to preserve prior as INCONCLUSIVE. This exposed the summary-label precedence issue fixed in source `133bec…` and covered by a regression test. It is not a material-delta success.
+- Explorer: <https://explorer-studio.genlayer.com/tx/0xdac1f12388515850381e83b6d9fd65660397275dd4691cc8698e8e51ffe1e783>.

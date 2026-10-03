@@ -33,16 +33,16 @@ The current canonical deployment was submitted to Studionet and verified in Expl
 - Explorer lifecycle: `FINALIZED`; GenVM `SUCCESS`; consensus `Accepted`.
 - Local and deployed contract bytes matched at the time (SHA-256 `dcf3c321b8d598e24d2d91f6a7c4aae9e0cfd272563dcaf15eb3789e79d4fda7`).
 
-That source passed live rendered-evidence, fork, supported-state, no-change successor, and composition transactions. The challenge evidence-binding correction (`450dd5c8…56df7`) was deployed at `0x91d0F2b43E79666c49c0000b15b98630c6Fc64Fc`; its repeat failure proof correctly binds S3 to C1. Current source SHA-256 `c184f679c4a929ace204531fcea846ecb8bc71349b2de39680b8bc3e45b340c4` is deployed at `0x74c493206438256A358B2448BBD36Ac4524c22ef` via finalized transaction `0x95e4b4d78647be5f2f5abd049943a3751b582b115a125647a78aee0850508cb6`. Deployed source parity and ten-method schema were verified. A current-source supported checkpoint and failed-challenge preservation passed. The time-bounded material-delta proof is in progress; live cycle rejection and challenge recovery are still unverified.
+Earlier source versions provided initial render, fork, supported-state, successor, composition, and challenge-preservation evidence. Current canonical source `386103fd111f6280b94f78a9508084e1ba72503d1d7824de5189d75218f9cbf0` is deployed at `0xDc01B2807A2D9285C9F9359930b8076ac89d6688` via finalized transaction `0xc953efe708125c4bec7669398e368c9f84184e1fb392638b80cec279073166c6`; source parity is byte-identical (53,413 bytes), and the live schema exposes ten methods. Its live time-cutoff successor, fail-closed challenge, render retrieval, composition, fork, and future/self-reference rejection proofs are recorded in [EVIDENCE.md](EVIDENCE.md) and [RELEASE_VERIFICATION.md](RELEASE_VERIFICATION.md). Challenge recovery after a failed attempt has not been proven; no live cycle can be formed through the finalized-child-only API.
 
 ## Required live proofs
 
-1. **Passed:** finalized initial live WEB_RENDER_TEXT resolution from WHO and example.com; both content/render hashes were recorded in `EVIDENCE.md`.
-2. **Not passed:** revalidation had `overall_delta=UNCHANGED`, but WHO was `UNKNOWN`; contract correctly preserved the prior. No successor claim.
-3. Material delta and successor attribution: still required.
-4. **Passed:** source fork with one `SUPPORTED` and one `CONTRADICTED` finding; finalized as `DISPUTED` / `CONTRADICTORY_REALITY`; usability returned `false`.
-5. Composition and cycle rejection: still required.
-6. Live transport failure preserving a prior finalized checkpoint: still required.
-7. Live challenge/revalidation recovery: still required.
+1. **Observed, claim result limited:** current source WEB_RENDER_TEXT transaction retrieved WHO and example.com. WHO claim was UNKNOWN; example.com claim SUPPORTED; overall INCONCLUSIVE. Render observations are not described as a fully supported render checkpoint.
+2. **Passed:** time-cutoff revalidation created successor checkpoint 2 with `CONTRADICTION` claim delta and predecessor 1; successor was DISPUTED/unusable.
+3. **Passed:** source fork with one SUPPORTED and one CONTRADICTED finding; finalized `DISPUTED` / `CONTRADICTORY_REALITY`, usability false.
+4. **Passed:** composition of supported checkpoints 4 and 5 yielded checkpoint 6, SUPPORTED/CONSISTENT, FRESH and usable.
+5. **Passed:** invalid future/self reference attempt finalized `checkpoint not found` without mutation; immutable composition accepts finalized children only.
+6. **Passed:** unavailable external source challenge preserved checkpoint 2 and bound the failed source to claim C1 in its attempt receipt.
+7. Challenge recovery after failure is not demonstrated. It is distinct from the verified fail-closed preservation behavior.
 
 Record transaction hashes, lifecycle/finality, explorer URLs, contract address, source commit/blob hash, and deployed-source parity. Do not call an accepted transaction finalized without chain evidence.
