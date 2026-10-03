@@ -31,10 +31,10 @@ Downstream contracts consume `get_certificate` and `is_checkpoint_usable`; provi
 
 ## External gates not verified
 
-- Latest documentation and helper changes are committed as `84c292da2d9ddec7d2985861c746291ea25465f3` and pushed to `main`.
-- Live future/self reference rejection finalized with `checkpoint not found`; immutable finalized-child DAG prevents back-edge insertion. Challenge recovery after a failed attempt is not demonstrated.
-- Owner-portfolio audit: still to complete against authenticated GitHub access.
-- Ecosystem collision search: limited to the prompt's named adjacent concepts and current public GenLayer documentation; no exhaustive search is claimed.
+- Latest documentation and helper changes are pushed to GitHub `main`; the final remote-head SHA is verified in the release verification record.
+- Live future/self reference rejection finalized with `checkpoint not found`; immutable finalized-child DAG prevents back-edge insertion. On current source, an unavailable challenge preserved checkpoint 8 and a valid retry created supported successor 9, FRESH and usable.
+- Owner-portfolio audit: reviewed all 51 public API-visible repositories (names/descriptions) and README-level detail for the seven closest overlaps. Decision Memory Protocol is the closest neighboring project; see `DECISION.md` for the substantive scope distinction and explicit rejection risk.
+- Ecosystem collision search: compared current official GenLayer docs and several public projects, including Intelligent Oracle, Lumen, and Internetcourt. This is a bounded collision assessment, not a novelty guarantee or coverage of private/unindexed projects.
 
 ## Evidence fields
 

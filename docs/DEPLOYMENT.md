@@ -33,7 +33,7 @@ The current canonical deployment was submitted to Studionet and verified in Expl
 - Explorer lifecycle: `FINALIZED`; GenVM `SUCCESS`; consensus `Accepted`.
 - Local and deployed contract bytes matched at the time (SHA-256 `dcf3c321b8d598e24d2d91f6a7c4aae9e0cfd272563dcaf15eb3789e79d4fda7`).
 
-Earlier source versions provided initial render, fork, supported-state, successor, composition, and challenge-preservation evidence. Current canonical source `386103fd111f6280b94f78a9508084e1ba72503d1d7824de5189d75218f9cbf0` is deployed at `0xDc01B2807A2D9285C9F9359930b8076ac89d6688` via finalized transaction `0xc953efe708125c4bec7669398e368c9f84184e1fb392638b80cec279073166c6`; source parity is byte-identical (53,413 bytes), and the live schema exposes ten methods. Its live time-cutoff successor, fail-closed challenge, render retrieval, composition, fork, and future/self-reference rejection proofs are recorded in [EVIDENCE.md](EVIDENCE.md) and [RELEASE_VERIFICATION.md](RELEASE_VERIFICATION.md). Challenge recovery after a failed attempt has not been proven; no live cycle can be formed through the finalized-child-only API.
+Earlier source versions provided initial render, fork, supported-state, successor, composition, and challenge-preservation evidence. Current canonical source `386103fd111f6280b94f78a9508084e1ba72503d1d7824de5189d75218f9cbf0` is deployed at `0xDc01B2807A2D9285C9F9359930b8076ac89d6688` via finalized transaction `0xc953efe708125c4bec7669398e368c9f84184e1fb392638b80cec279073166c6`; source parity is byte-identical (53,413 bytes), and the live schema exposes ten methods. Its live time-cutoff successor, fail-closed challenge and later recovery successor, render retrieval, composition, fork, and future/self-reference rejection proofs are recorded in [EVIDENCE.md](EVIDENCE.md) and [RELEASE_VERIFICATION.md](RELEASE_VERIFICATION.md). No live cycle can be formed through the finalized-child-only API.
 
 ## Required live proofs
 
@@ -43,6 +43,6 @@ Earlier source versions provided initial render, fork, supported-state, successo
 4. **Passed:** composition of supported checkpoints 4 and 5 yielded checkpoint 6, SUPPORTED/CONSISTENT, FRESH and usable.
 5. **Passed:** invalid future/self reference attempt finalized `checkpoint not found` without mutation; immutable composition accepts finalized children only.
 6. **Passed:** unavailable external source challenge preserved checkpoint 2 and bound the failed source to claim C1 in its attempt receipt.
-7. Challenge recovery after failure is not demonstrated. It is distinct from the verified fail-closed preservation behavior.
+7. **Passed:** challenge recovery after failure created supported successor 9 from checkpoint 8; its portable certificate is FRESH and usability returned true.
 
 Record transaction hashes, lifecycle/finality, explorer URLs, contract address, source commit/blob hash, and deployed-source parity. Do not call an accepted transaction finalized without chain evidence.
