@@ -89,6 +89,32 @@ def test_opposite_source_states_force_disputed_even_if_llm_says_consistent(direc
     assert contract.is_checkpoint_usable(cp) is False
 
 
+def test_informative_contradictions_override_insufficient_summary(direct_deploy, direct_vm):
+    contract = setup_contract(direct_deploy, direct_vm,
+                              observation("CONTRADICTED", "CONTRADICTED", "INSUFFICIENT_EVIDENCE", "CONTRADICTION"))
+    cp = contract.create_checkpoint("subject", "title", "question", json.dumps(CLAIMS),
+                                    json.dumps(SOURCES), 3600, 300, 2)
+    result = json.loads(contract.resolve_checkpoint(cp))
+    certificate = json.loads(contract.get_certificate(cp))
+    assert result["outcome"] == "FINALIZED"
+    assert certificate["state_status"] == "BLOCKED"
+    assert certificate["divergence_status"] == "CONSISTENT"
+    assert contract.is_checkpoint_usable(cp) is False
+
+
+def test_unanimous_contradictions_are_not_mislabeled_as_a_reality_fork(direct_deploy, direct_vm):
+    contract = setup_contract(direct_deploy, direct_vm,
+                              observation("CONTRADICTED", "CONTRADICTED", "CONTRADICTORY_REALITY", "CONTRADICTION"))
+    cp = contract.create_checkpoint("subject", "title", "question", json.dumps(CLAIMS),
+                                    json.dumps(SOURCES), 3600, 300, 2)
+    result = json.loads(contract.resolve_checkpoint(cp))
+    certificate = json.loads(contract.get_certificate(cp))
+    assert result["outcome"] == "FINALIZED"
+    assert certificate["state_status"] == "BLOCKED"
+    assert certificate["divergence_status"] == "CONSISTENT"
+    assert contract.is_checkpoint_usable(cp) is False
+
+
 def test_forged_leader_protocol_identity_rejected(direct_deploy, direct_vm):
     result = json.loads(observation())
     result["checkpoint_id"] = 999

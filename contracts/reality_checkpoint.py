@@ -385,10 +385,8 @@ def _derive_state(observation: dict[str, Any], claims: list[dict[str, Any]], min
         return "UNAVAILABLE", "EXTERNAL_FAILURE"
     if any(_claim_has_fork(observation, c["claim_id"]) for c in observation["claims"]):
         return "DISPUTED", "CONTRADICTORY_REALITY"
-    if observation["divergence"] == "CONTRADICTORY_REALITY":
-        # A model label is not evidence of a fork. Without opposing source
-        # findings, reject the label and fail closed as insufficient evidence.
-        return "INCONCLUSIVE", "INSUFFICIENT_EVIDENCE"
+    # A model label is not evidence of a fork. Opposing bound findings above
+    # establish one; absent that pattern, continue using the individual claims.
     if observation["divergence"] == "MATERIAL_DIVERGENCE":
         return "DISPUTED", observation["divergence"]
     if _informative_cluster_count(observation) < minimum_clusters:
@@ -398,7 +396,7 @@ def _derive_state(observation: dict[str, Any], claims: list[dict[str, Any]], min
     # source findings meet the independence floor, derive the state from those
     # findings; unknowns and per-claim floors below still fail closed.
     divergence = "CONSISTENT" if observation["divergence"] in (
-        "INSUFFICIENT_EVIDENCE", "INSUFFICIENT_INDEPENDENCE"
+        "INSUFFICIENT_EVIDENCE", "INSUFFICIENT_INDEPENDENCE", "CONTRADICTORY_REALITY"
     ) else observation["divergence"]
     by_id = {x["claim_id"]: x for x in observation["claims"]}
     # A supported dependent claim cannot outlive a failed prerequisite.

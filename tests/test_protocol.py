@@ -167,10 +167,17 @@ def test_omitted_bound_source_finding_becomes_unknown_not_contract_error():
     assert (state, divergence) == ("INCONCLUSIVE", "INSUFFICIENT_EVIDENCE")
 
 
-def test_model_fork_label_without_opposing_source_findings_fails_closed():
+def test_model_fork_label_without_opposing_source_findings_cannot_create_fork():
     p = proposal(findings=("SUPPORTED", "SUPPORTED"), divergence="CONTRADICTORY_REALITY")
     state, divergence = rc._derive_state(p, [{"claim_id": "C1", "required_independent_clusters": 1}], 1)
-    assert (state, divergence) == ("INCONCLUSIVE", "INSUFFICIENT_EVIDENCE")
+    assert (state, divergence) == ("SUPPORTED", "CONSISTENT")
+
+
+def test_unanimous_independent_contradictions_survive_model_fork_label():
+    p = proposal(findings=("CONTRADICTED", "CONTRADICTED"), state="CONTRADICTED",
+                 divergence="CONTRADICTORY_REALITY")
+    claim_specs = [{"claim_id": "C1", "required_independent_clusters": 2}]
+    assert rc._derive_state(p, claim_specs, 2) == ("BLOCKED", "CONSISTENT")
 
 
 def test_same_owner_urls_do_not_corroborate():
