@@ -31,7 +31,7 @@ Downstream contracts consume `get_certificate` and `is_checkpoint_usable`; provi
 
 ## External gates not verified
 
-- GitHub push for latest documentation and helper changes: pending local commit/push.
+- Latest documentation and helper changes are committed as `84c292da2d9ddec7d2985861c746291ea25465f3` and pushed to `main`.
 - Live future/self reference rejection finalized with `checkpoint not found`; immutable finalized-child DAG prevents back-edge insertion. Challenge recovery after a failed attempt is not demonstrated.
 - Owner-portfolio audit: still to complete against authenticated GitHub access.
 - Ecosystem collision search: limited to the prompt's named adjacent concepts and current public GenLayer documentation; no exhaustive search is claimed.
