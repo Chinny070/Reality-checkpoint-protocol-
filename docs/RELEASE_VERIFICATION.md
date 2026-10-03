@@ -27,7 +27,7 @@ Run the suites separately: `python -m pytest tests/test_protocol.py -q` for pure
 | Corrected candidate contract SHA-256 | `2ca8e45982d88184b845df6441a9e6c2667af9ecc2bed88754964d8bb788a37d` |
 | Corrected candidate Git blob | `c7b915d9a137a25646b6ca4468f5cb154c371c2b` |
 | Corrected source commit | `66d87907b04ab8b7490ace2f02403be177350a98` |
-| Completed release/documentation commit | `8666e5f4d47eb40c63db7ae2b5cc98f2e6eea2f3` (pushed to GitHub `main`) |
+| Completed release/documentation commits | Implementation and release record pushed; each push was followed by a matching local/remote `main` head check |
 | Historical deployed source hashes | `386103fd…18f9cbf0`, `fd0969dc…f7e2`, and earlier sources |
 | Corrected source deployment parity | PASS: byte-identical, 59,431 bytes |
 | Previous evidence-record commit | `37f670b1fc62a9fba39344ca71195e6c32dd4f77` |
@@ -111,7 +111,7 @@ The Python JSON-RPC source verifier returned HTTP 403. The authenticated SDK exp
 | Initial failed-checkpoint recovery | Intentional terminal semantics: initial INCONCLUSIVE/UNAVAILABLE checkpoints cannot be revived; create a replacement checkpoint |
 | Supplemental challenge admission | GREEN locally and for same-domain live hostile proof; validator-classified cross-domain challenge path requires further live evidence |
 | Live WEB_RENDER_TEXT | GREEN for actual rendered-source retrieval/evidence; WHO remains UNKNOWN, so no fully supported WHO claim |
-| GitHub push | GREEN: `origin/main` and local `main` both resolve to `8666e5f4d47eb40c63db7ae2b5cc98f2e6eea2f3` |
+| GitHub push | GREEN: corrected implementation and release records pushed; final local/remote `main` heads were verified equal |
 | Public owner portfolio audit | GREEN within scope: 51 public repo names/descriptions reviewed, seven closest README reviews; Decision Memory overlap/rejection risk disclosed in `DECISION.md` |
 
 The project must not be marked frozen, finalized, or submission-ready while any required live proof above remains incomplete. Older challenge-recovery transaction evidence applies only to the prior deployed source and does not establish behavior of the corrected source. A failure to meet a live gate is not relabeled as an external connectivity block when the chain is reachable and the attempt yielded a protocol outcome.
