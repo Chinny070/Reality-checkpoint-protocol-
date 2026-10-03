@@ -15,7 +15,7 @@ Current official GenLayer docs list Studionet RPC `https://studio.genlayer.com/a
 
 Run `./deploy.ps1` for local GenVM lint/schema preflight. Once the GenLayer CLI is installed and authenticated, `./deploy.ps1 -Deploy` submits to the canonical Studionet RPC. A returned address/transaction is not proof of consensus finality; inspect transaction lifecycle and Explorer evidence before documenting deployment.
 
-After a real deployment, run the read-only verifier (current official RPC methods: `gen_getContractCode`, `gen_getContractSchema`, and `gen_getTransactionLifecycle`):
+After a real deployment, verify finality with `genlayer receipt`, inspect the deployed schema with `genlayer schema`, and export code with `genlayer code`. Compare exported contract bytes against the local source. The Python JSON-RPC verifier below may receive HTTP 403 in restricted environments; the authenticated GenLayer CLI is the fallback used for the current verification.
 
 ```powershell
 python scripts/live_verify.py --address 0x... --deployment-tx 0x...
@@ -33,7 +33,7 @@ The current canonical deployment was submitted to Studionet and verified in Expl
 - Explorer lifecycle: `FINALIZED`; GenVM `SUCCESS`; consensus `Accepted`.
 - Local and deployed contract bytes matched at the time (SHA-256 `dcf3c321b8d598e24d2d91f6a7c4aae9e0cfd272563dcaf15eb3789e79d4fda7`).
 
-That source passed live rendered-evidence, fork, supported-state, no-change successor, composition, and fail-closed challenge transactions. A challenge attempt receipt then revealed that an added challenge source was not bound to its claim IDs in the preserved-prior receipt. The current local candidate fixes this and includes a regression test. Its SHA-256 is `450dd5c8c25d22e9ac9922df25f3f2c454015171bab643a9b653cda209156df7`; it must be deployed, parity-checked, and run through the unavailable-source challenge before the latest source is considered live-verified. The time-bound material-delta attempt was `UNDETERMINED` after validator disagreement. See `RELEASE_VERIFICATION.md` and `EVIDENCE.md` for exact transactions. Live cycle rejection, a material-delta pass, and challenge recovery are still unverified.
+That source passed live rendered-evidence, fork, supported-state, no-change successor, and composition transactions. The challenge evidence-binding correction (`450dd5c8…56df7`) was deployed at `0x91d0F2b43E79666c49c0000b15b98630c6Fc64Fc`; its repeat failure proof correctly binds S3 to C1. Current source SHA-256 `c184f679c4a929ace204531fcea846ecb8bc71349b2de39680b8bc3e45b340c4` is deployed at `0x74c493206438256A358B2448BBD36Ac4524c22ef` via finalized transaction `0x95e4b4d78647be5f2f5abd049943a3751b582b115a125647a78aee0850508cb6`. Deployed source parity and ten-method schema were verified. A current-source supported checkpoint and failed-challenge preservation passed. The time-bounded material-delta proof is in progress; live cycle rejection and challenge recovery are still unverified.
 
 ## Required live proofs
 

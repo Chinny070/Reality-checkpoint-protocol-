@@ -9,14 +9,14 @@ This record distinguishes reproducible local checks from finalized live-chain ev
 | Python syntax | PASS | `python -m py_compile contracts/reality_checkpoint.py tests/test_protocol.py tests/direct/test_contract.py` |
 | Offline preflight | PASS | `python scripts/preflight.py`; one canonical contract, 10 public API methods |
 | Direct Mode | PASS: 15/15 | `gltest tests/direct/test_contract.py -q` |
-| Protocol/adversarial tests | PASS: 19/19 | `pytest tests/test_protocol.py -q` |
+| Protocol/adversarial tests | PASS: 21/21 | `python -m pytest tests/test_protocol.py -q` |
 | GenVM AST lint | PASS: 3 checks | `genvm-lint check contracts/reality_checkpoint.py` |
 | SDK semantic validation | PASS | `genvm-lint check contracts/reality_checkpoint.py`; GenVM v0.2.16 |
 | ABI/schema extraction | PASS: 10 methods (5 view, 5 write) | `genvm-lint schema contracts/reality_checkpoint.py` |
 | GenVM JSON-specific check | NOT RUN | Installed linter exposes no JSON-mode command |
 | Local-chain integration | NOT RUN | No local Studio/GLSim node was started |
 
-The first broad `pytest tests -q` invocation is not a valid Direct Mode command: it bypassed the GenLayer `gltest` fixture and failed 13 fixture-dependent Direct tests. Running the prescribed `gltest` command passed all 14 Direct tests; the protocol suite passed all 18 tests. Do not count the failed invocation as a candidate regression.
+Plain pytest is not the Direct Mode runner for this installed package: it bypasses the required `gltest` storage fixture. The supported `gltest tests/direct/test_contract.py -q` command passes all 15 Direct tests. Protocol helpers run separately under pytest (21/21).
 
 ## Source and Git
 
@@ -24,9 +24,9 @@ The first broad `pytest tests -q` invocation is not a valid Direct Mode command:
 |---|---|
 | Branch | `main` |
 | Remote | `https://github.com/Chinny070/Reality-checkpoint-protocol-` |
-| Current candidate contract SHA-256 | `450dd5c8c25d22e9ac9922df25f3f2c454015171bab643a9b653cda209156df7` |
+| Current candidate contract SHA-256 | `c184f679c4a929ace204531fcea846ecb8bc71349b2de39680b8bc3e45b340c4` |
 | Deployed source hashes | `fd0969dc0d7b1d9df4b13be0c5de65c91757d5edece3884c6f15f61c4b29f7e2` and earlier `dcf3c321b8d598e24d2d91f6a7c4aae9e0cfd272563dcaf15eb3789e79d4fda7` |
-| Current source deployment parity | Pending: current source adds challenge-attempt source binding and must be redeployed |
+| Current source deployment parity | PASS: current source `c184f679…b340c4` byte-identical, 53,285 bytes |
 | Previous evidence-record commit | `37f670b1fc62a9fba39344ca71195e6c32dd4f77` |
 | Git metadata | `.gitmeta`; explicit `--git-dir` / `--work-tree` used due inherited `.git` ownership mismatch |
 
@@ -41,7 +41,7 @@ The first broad `pytest tests -q` invocation is not a valid Direct Mode command:
 | GenVM | `SUCCESS` |
 | Consensus | `Accepted` |
 
-The source at SHA-256 `fd0969dc…f7e2` was deployed at `0xdF1BF015f0d6a136Fc8c89020e1F9D122e9aDaEf` via `0x743d95c1b06d18ff885461f36ee9bb989a6e65b7087c753789c93ccda576cf17` (FINALIZED, GenVM SUCCESS, MAJORITY_AGREE); GenLayer CLI source retrieval was byte-identical, and schema contained the expected 10 methods. The current source hash `450dd5c8…56df7` is a follow-up evidence-binding correction and has not yet been deployed.
+The previous source at SHA-256 `fd0969dc…f7e2` was deployed at `0xdF1BF015f0d6a136Fc8c89020E1F9D122e9aDaEf` via `0x743d95c1b06d18ff885461f36ee9bb989a6e65b7087c753789c93ccda576cf17`. Source `450dd5c8…56df7` is deployed at `0x91d0F2b43E79666c49c0000b15b98630c6Fc64Fc`. Current candidate SHA-256 `c184f679…b340c4` is deployed at `0x74c493206438256A358B2448BBD36Ac4524c22ef` via `0x95e4b4d78647be5f2f5abd049943a3751b582b115a125647a78aee0850508cb6` (FINALIZED, GenVM SUCCESS, five validators agreed / MAJORITY_AGREE). CLI-exported deployed bytes match exactly; live schema exposes the expected 10 methods. The Python JSON-RPC verifier returned HTTP 403, so parity and schema were checked via the authenticated GenLayer CLI export and exact byte comparison.
 
 ## Live protocol transactions
 
@@ -64,6 +64,9 @@ The source at SHA-256 `fd0969dc…f7e2` was deployed at `0xdF1BF015f0d6a136Fc8c8
 | Corrected-source fork resolution | `0xe83e278319e95b9890bc799b6c58d7a10636dc2fc0522c9333dcea799ebd650f` | FINALIZED; opposing SUPPORTED/CONTRADICTED findings; DISPUTED/CONTRADICTORY_REALITY; usable `false` |
 | Corrected-source unavailable challenge | `0x7bba240a174fa8beeba606bbdcff3062ee822a552b9dbe35331c31710f33981e` | FINALIZED; challenge output PRESERVED_PRIOR; cp3 remains FINALIZED and usable. Receipt 5 exposed missing claim binding for the appended challenge source; current candidate fixes this and needs re-deployment/live check. |
 | Material-delta revalidation attempt | `0x5822d463ecc56d93b2cb67deeb399e0cab5d96103c5ede6bc99131f4f9998764` | UNDETERMINED because validators disagreed. Not a pass; material delta remains unverified live. |
+| Current-source supported parent create | `0xfb18bf5fb8055f09e51a656c6e93b70c0faf8735ca9ac8cebcce712582b936af` | FINALIZED; checkpoint ID 1 |
+| Current-source supported parent resolve | `0x33c55f4c2681df36e42a2530d6a42b586a982e7b3c6fc59f4a3f71c019c196a8` | FINALIZED; both independent echo findings SUPPORTED; checkpoint 1 FINALIZED |
+| Current-source challenge failure proof | `0xd1dfb3b11ed349107aa60bcf21796d89a2100b3b53536878a19466dc6621b94b` | FINALIZED; PRESERVED_PRIOR; source S3 observation EXTERNAL_FAILURE; attempt receipt 2 contains `claim_ids=["C1"]`; checkpoint 1 remains FINALIZED/SUPPORTED |
 
 Explorer transaction links and exact evidence hashes are in `EVIDENCE.md`. The exploratory wrong-ID transaction `0x06be77c3e1ba498655e7a3951808a7a85c49000d84700acfddb845b600f9d537` finalized as `checkpoint not found`; it is excluded from passing proofs.
 
@@ -72,18 +75,18 @@ Explorer transaction links and exact evidence hashes are in `EVIDENCE.md`. The e
 | Gate | Status |
 |---|---|
 | Current candidate tests, lint, schema | GREEN |
-| Current candidate Studionet deployment and source parity | NOT YET VERIFIED |
+| Current candidate Studionet deployment and source parity | GREEN |
 | Previous byte-identical source live web-render evidence | GREEN |
 | Previous byte-identical source live Reality Fork Detection and unusable disputed certificate | GREEN |
-| Live no-change revalidation successor | GREEN on source `fd0969dc…f7e2` |
+| Live no-change revalidation successor | GREEN on previous source `fd0969dc…f7e2`; current-source semantics unchanged except challenge evidence binding |
 | Live material semantic delta | NOT GREEN: latest attempt UNDETERMINED |
 | Live composite checkpoint | GREEN on source `fd0969dc…f7e2`; live cycle rejection still not tested |
-| Live transport failure preserving a prior checkpoint | GREEN on source `fd0969dc…f7e2`, via challenge. Added-source claim binding now regression-tested and awaits deployment/live repeat |
+| Live transport failure preserving a prior checkpoint | GREEN on current source `450dd5c8…56df7`; repeated challenge receipt correctly binds the appended source to its claim |
 | Live challenge recovery | Not yet demonstrated; only fail-closed preservation was verified |
-| GitHub push | Previous evidence documentation commit pushed; corrected candidate changes require a new push |
+| GitHub push | Current candidate and evidence changes require commit and push |
 
 The project must not be marked frozen, finalized, or submission-ready while any required live proof above remains incomplete. A failure to meet a live gate is not relabeled as an external connectivity block when the chain is reachable and the attempt yielded a protocol outcome.
 
 ## Connectivity and wallet notes
 
-Earlier independent retries showed GitHub HTTPS transport denied by the Windows/network sandbox and an expired saved `gh` token. GitHub connectivity/authentication should be retried separately before final push. Studionet became reachable with the permitted elevated network call. The local keystore was unlocked by the user through GenLayer CLI's secure prompt; no wallet secret was copied into chat or the repository.
+GitHub authentication was refreshed through the secure CLI flow and earlier pushes succeeded; the current candidate still requires a new commit/push. Studionet is reachable. The local keystore was unlocked by the user through GenLayer CLI's secure prompt; `live_write.mjs` reads it from the OS credential store and never prints the private key.

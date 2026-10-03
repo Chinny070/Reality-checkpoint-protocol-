@@ -53,7 +53,7 @@ GenVM semantic validation uses the version resolved by `genvm-lint`; the release
 
 ## Status
 
-Local implementation gates are green: Direct Mode and protocol/adversarial suites, GenVM lint, schema extraction, and local Python compilation passed. A previous source hash passed live render, Reality Fork, supported-state, no-change revalidation, composition, and unavailable-challenge preservation proofs. Receipt review found a missing claim binding for an added source in a failed challenge; the current candidate fixes that issue and passes a new Direct Mode regression test. Current source hash still needs deployment, parity checking, and a repeat live failure proof. The live material-delta attempt was UNDETERMINED. See [docs/RELEASE_VERIFICATION.md](docs/RELEASE_VERIFICATION.md) for exact version boundaries. This candidate is not finalized or submission-ready while required gates remain.
+Local implementation gates are green: 15 Direct Mode tests, 22 protocol/adversarial tests, GenVM lint (3 checks), ten-method schema, and preflight. Source SHA-256 `133bec36…c49bace` fixes state derivation when bound independent evidence contradicts a claim but a validator labels its summary insufficient. It is committed locally and awaiting deployment/parity and repeat live delta verification. Source `c184f679…b340c4` remains deployed with parity; its live clock revalidation preserved prior due to the issue now fixed. Earlier byte-identical deployments have live web-render, Reality Fork, no-change successor, and composition proofs. Live cycle rejection and challenge recovery remain unverified. See [docs/RELEASE_VERIFICATION.md](docs/RELEASE_VERIFICATION.md). This candidate is not finalized or submission-ready while required gates remain.
 
 ## Repository
 

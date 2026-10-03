@@ -98,6 +98,18 @@ def _now() -> int:
         raise gl.vm.UserError("invalid transaction datetime")
 
 
+def _sender_address() -> str:
+    """Return the caller across the SDK and Direct Mode message shapes."""
+    message = gl.message
+    sender = getattr(message, "sender_address", None)
+    if sender is None:
+        # Some Direct Mode adapters expose this same address as `sender`.
+        sender = getattr(message, "sender", None)
+    if sender is None:
+        raise gl.vm.UserError("sender address unavailable")
+    return str(sender)
+
+
 def _bounded_text(value: Any, limit: int, field: str) -> str:
     if not isinstance(value, str) or not value or len(value) > limit:
         raise gl.vm.UserError(f"invalid {field}")
@@ -342,13 +354,15 @@ def _normalize_observation(raw: Any, expected_claims: list[dict[str, Any]], expe
     }
 
 
-def _cluster_count(observation: dict[str, Any], claim_id: str) -> int:
+def _observed_cluster_count(observation: dict[str, Any], claim_id: str) -> int:
     relations = {x["source_id"]: x for x in observation["relationships"]}
     states = {x["source_id"]: x["state"] for x in next(c for c in observation["claims"] if c["claim_id"] == claim_id)["source_findings"]}
     clusters = set()
     for source_id, state in states.items():
         rel = relations[source_id]
-        if state == "SUPPORTED" and rel["relationship"] == "INDEPENDENT":
+        # Independence is about provenance, not direction: an independent
+        # contradiction is just as informative as independent support.
+        if state in ("SUPPORTED", "CONTRADICTED") and rel["relationship"] == "INDEPENDENT":
             clusters.add(rel["cluster_id"])
     return len(clusters)
 
@@ -359,11 +373,11 @@ def _claim_has_fork(observation: dict[str, Any], claim_id: str) -> bool:
     return "SUPPORTED" in states and "CONTRADICTED" in states
 
 
-def _supported_cluster_count(observation: dict[str, Any]) -> int:
+def _informative_cluster_count(observation: dict[str, Any]) -> int:
     relations = {x["source_id"]: x for x in observation["relationships"]}
     return len({relations[f["source_id"]]["cluster_id"]
                 for c in observation["claims"] for f in c["source_findings"]
-                if f["state"] == "SUPPORTED" and relations[f["source_id"]]["relationship"] == "INDEPENDENT"})
+                if f["state"] in ("SUPPORTED", "CONTRADICTED") and relations[f["source_id"]]["relationship"] == "INDEPENDENT"})
 
 
 def _derive_state(observation: dict[str, Any], claims: list[dict[str, Any]], minimum_clusters: int = 1) -> tuple[str, str]:
@@ -377,25 +391,30 @@ def _derive_state(observation: dict[str, Any], claims: list[dict[str, Any]], min
         return "INCONCLUSIVE", "INSUFFICIENT_EVIDENCE"
     if observation["divergence"] == "MATERIAL_DIVERGENCE":
         return "DISPUTED", observation["divergence"]
-    if observation["divergence"] in ("INSUFFICIENT_EVIDENCE", "INSUFFICIENT_INDEPENDENCE"):
-        return "INCONCLUSIVE", observation["divergence"]
-    if _supported_cluster_count(observation) < minimum_clusters:
-        return "INCONCLUSIVE", "INSUFFICIENT_INDEPENDENCE"
+    if _informative_cluster_count(observation) < minimum_clusters:
+        reason = "INSUFFICIENT_INDEPENDENCE"
+        return "INCONCLUSIVE", reason
+    # A validator's insufficiency label is advisory. Once the deterministic
+    # source findings meet the independence floor, derive the state from those
+    # findings; unknowns and per-claim floors below still fail closed.
+    divergence = "CONSISTENT" if observation["divergence"] in (
+        "INSUFFICIENT_EVIDENCE", "INSUFFICIENT_INDEPENDENCE"
+    ) else observation["divergence"]
     by_id = {x["claim_id"]: x for x in observation["claims"]}
     # A supported dependent claim cannot outlive a failed prerequisite.
     for spec in claims:
         for dependency in spec.get("depends_on", []):
             if by_id[dependency]["state"] != "SUPPORTED":
-                return ("BLOCKED", observation["divergence"]) if by_id[dependency]["state"] == "CONTRADICTED" else ("INCONCLUSIVE", "INSUFFICIENT_EVIDENCE")
+                return ("BLOCKED", divergence) if by_id[dependency]["state"] == "CONTRADICTED" else ("INCONCLUSIVE", "INSUFFICIENT_EVIDENCE")
     for spec in claims:
         claim = by_id[spec["claim_id"]]
         if claim["state"] in ("UNKNOWN", "UNAVAILABLE"):
-            return "INCONCLUSIVE", observation["divergence"]
-        if _cluster_count(observation, spec["claim_id"]) < spec["required_independent_clusters"]:
+            return "INCONCLUSIVE", "INSUFFICIENT_EVIDENCE"
+        if _observed_cluster_count(observation, spec["claim_id"]) < spec["required_independent_clusters"]:
             return "INCONCLUSIVE", "INSUFFICIENT_INDEPENDENCE"
         if claim["state"] == "CONTRADICTED":
-            return "BLOCKED", observation["divergence"]
-    return "SUPPORTED", observation["divergence"]
+            return "BLOCKED", divergence
+    return "SUPPORTED", divergence
 
 
 def _apply_delta(prior: str, delta: str, observed: str) -> str:
@@ -522,7 +541,7 @@ class RealityCheckpoint(gl.Contract):
                       "validity_seconds": validity_seconds, "warning_seconds": warning_seconds,
                       "minimum_independent_clusters": minimum_independent_clusters}
         cp = {
-            "checkpoint_id": checkpoint_id, "creator": str(gl.message.sender_address), "definition_version": 1,
+            "checkpoint_id": checkpoint_id, "creator": _sender_address(), "definition_version": 1,
             "definition_hash": _hash(definition), "subject_key": subject_key, "title": title,
             "state_question": state_question, "claims": c, "sources": s,
             "claim_graph_hash": _hash(c), "source_set_hash": _hash(s),
@@ -669,7 +688,7 @@ class RealityCheckpoint(gl.Contract):
         defn = {"child_ids": child_ids, "critical_child_ids": critical_child_ids,
                 "allowed_degraded": allowed_degraded, "require_fresh": require_fresh,
                 "allow_minor_divergence": allow_minor_divergence}
-        cp = {"checkpoint_id": cp_id, "creator": str(gl.message.sender_address), "definition_version": 1,
+        cp = {"checkpoint_id": cp_id, "creator": _sender_address(), "definition_version": 1,
               "definition_hash": _hash(defn), "subject_key": subject_key, "title": title,
               "state_question": state_question, "claims": [], "sources": [],
               "claim_graph_hash": _hash([]), "source_set_hash": _hash([]), "lifecycle_status": "FINALIZED",

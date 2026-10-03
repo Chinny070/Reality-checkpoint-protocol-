@@ -54,4 +54,11 @@ The later diagnostic deployment `0xB9f9e09571679e719184b751baf600dec9d5841B` use
 - Unavailable challenge against checkpoint 3: transaction `0x7bba240a174fa8beeba606bbdcff3062ee822a552b9dbe35331c31710f33981e`, FINALIZED; return `PRESERVED_PRIOR`, attempt receipt 5; source at `.invalid` was `EXTERNAL_FAILURE`, attempt `UNAVAILABLE`, and checkpoint 3 remained FINALIZED/usable. The attempt receipt revealed the appended source had empty `claim_ids`; the current local candidate fixes this and must be redeployed and re-proven.
 - Time-bound semantic-delta attempt: checkpoint 7 resolved initially as SUPPORTED. Revalidation tx `0x5822d463ecc56d93b2cb67deeb399e0cab5d96103c5ede6bc99131f4f9998764` became UNDETERMINED after validators disagreed. No live material-delta pass is claimed.
 
-The current un-deployed candidate hash `450dd5c8c25d22e9ac9922df25f3f2c454015171bab643a9b653cda209156df7` adds correct claim/source binding for challenge-failure attempts. Local Direct Mode includes a regression test; deploy, parity-check, and repeat the unavailable challenge before treating this new source as live verified.
+## Current source `450dd5c8…56df7`
+
+- Deployment tx `0x6ce1ef5652140bcb0aa34503b95c0a46be702e3642fbd7cdc664f4349ec56490`; address `0x91d0F2b43E79666c49c0000b15b98630c6Fc64Fc`; FINALIZED, GenVM SUCCESS, MAJORITY_AGREE.
+- CLI-retrieved deployed source is byte-identical to `contracts/reality_checkpoint.py`, SHA-256 `450dd5c8c25d22e9ac9922df25f3f2c454015171bab643a9b653cda209156df7`; schema has the expected 10 methods.
+- Supported checkpoint creation tx `0xfb18bf5fb8055f09e51a656c6e93b70c0faf8735ca9ac8cebcce712582b936af`; resolution `0x33c55f4c2681df36e42a2530d6a42b586a982e7b3c6fc59f4a3f71c019c196a8`; finalized SUPPORTED / CONSISTENT based on two independent echo endpoints.
+- Unavailable-source challenge tx `0xd1dfb3b11ed349107aa60bcf21796d89a2100b3b53536878a19466dc6621b94b`; finalized `PRESERVED_PRIOR`; attempt receipt 2 is UNAVAILABLE / EXTERNAL_FAILURE and its source S3 evidence receipt has `claim_ids:["C1"]`, `observation_status:EXTERNAL_FAILURE`. Checkpoint 1 remains FINALIZED/SUPPORTED with the original two-source definition.
+
+The live material-delta attempt against the previous source was UNDETERMINED after validator disagreement; no material-change PASS is claimed for this source.

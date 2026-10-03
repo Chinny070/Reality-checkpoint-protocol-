@@ -16,7 +16,7 @@ Each claim may restrict `allowed_retrieval_kinds` to any nonempty subset of `WEB
 
 Create, then call `resolve_checkpoint`. The write result is JSON with the checkpoint ID and receipt ID; inspect the lifecycle/state before treating it as finalized. Read `get_certificate` and `is_checkpoint_usable` before relying on it. `revalidate` is permissionless at any time; callers may use freshness expiry, an observed event, or their own policy as the trigger. `challenge` binds a claim, reason, factual ground, and the required `new_source_json` string (pass `""` when the factual ground is the evidence basis and no source is added).
 
-The GenLayer CLI parses top-level JSON arrays/objects as typed calldata containers. When passing the contract's JSON-string parameters (`claims_json`, `sources_json`, or challenge `new_source_json`) through `genlayer write`, prefix the serialized JSON argument with `json:` so it is encoded as a string. SDK consumers should pass an ordinary string containing JSON.
+Pass the contract's JSON parameters as ordinary strings containing JSON when using GenLayerJS. The currently installed GenLayer CLI 0.39.1 parses JSON-shaped `--args` values as typed arrays/objects and has no string escape; `json:` is not supported by its current parser. For reproducible live writes, use [`scripts/live_write.mjs`](../scripts/live_write.mjs), which reads the unlocked signer from the GenLayer CLI OS credential store and loads positional arguments from a JSON array file. Never put a private key in an argument file or shell command. The CLI remains suitable for writes whose arguments are scalar values.
 
 ## Public methods
 

@@ -91,7 +91,7 @@ def test_source_cluster_identity_ignores_forged_model_cluster_ids():
     normalized = rc._normalize_observation(p, claims, sources)
     clusters = {r["cluster_id"] for r in normalized["relationships"]}
     assert clusters == {"domain:example.com"}
-    assert rc._supported_cluster_count(normalized) == 1
+    assert rc._informative_cluster_count(normalized) == 1
 
 
 def test_claim_retrieval_permissions_are_enforced():
@@ -118,7 +118,7 @@ def test_boolean_cannot_be_used_as_a_numeric_threshold():
 
 def test_source_cluster_count_does_not_equal_url_count():
     p = proposal(rels=("INDEPENDENT", "SYNDICATED"))
-    assert rc._supported_cluster_count(p) == 1
+    assert rc._informative_cluster_count(p) == 1
     state, divergence = rc._derive_state(p, [{"claim_id": "C1", "required_independent_clusters": 1}], 2)
     assert (state, divergence) == ("INCONCLUSIVE", "INSUFFICIENT_INDEPENDENCE")
 
@@ -127,6 +127,28 @@ def test_opposite_source_assertions_force_reality_fork():
     p = proposal(findings=("SUPPORTED", "CONTRADICTED"), divergence="CONSISTENT")
     state, divergence = rc._derive_state(p, [{"claim_id": "C1", "required_independent_clusters": 1}], 1)
     assert (state, divergence) == ("DISPUTED", "CONTRADICTORY_REALITY")
+
+
+def test_independent_contradictions_are_informative_and_block_checkpoint():
+    p = proposal(findings=("CONTRADICTED", "CONTRADICTED"), state="CONTRADICTED")
+    claim_specs = [{"claim_id": "C1", "required_independent_clusters": 2}]
+    assert rc._informative_cluster_count(p) == 2
+    assert rc._observed_cluster_count(p, "C1") == 2
+    assert rc._derive_state(p, claim_specs, 2) == ("BLOCKED", "CONSISTENT")
+
+
+def test_sufficient_bound_findings_override_model_insufficiency_label():
+    p = proposal(findings=("CONTRADICTED", "CONTRADICTED"), state="CONTRADICTED",
+                 divergence="INSUFFICIENT_EVIDENCE")
+    claim_specs = [{"claim_id": "C1", "required_independent_clusters": 2}]
+    assert rc._derive_state(p, claim_specs, 2) == ("BLOCKED", "CONSISTENT")
+
+
+def test_unknown_unavailable_and_dependent_sources_do_not_count_as_informative():
+    p = proposal(findings=("CONTRADICTED", "UNKNOWN"), rels=("INDEPENDENT", "INDEPENDENT"), state="UNKNOWN")
+    p["claims"][0]["source_findings"][1]["state"] = "UNAVAILABLE"
+    assert rc._informative_cluster_count(p) == 1
+    assert rc._observed_cluster_count(p, "C1") == 1
 
 
 def test_omitted_bound_source_finding_becomes_unknown_not_contract_error():
@@ -142,7 +164,7 @@ def test_omitted_bound_source_finding_becomes_unknown_not_contract_error():
     assert findings == {"S1": "SUPPORTED", "S2": "UNKNOWN"}
     assert normalized["claims"][0]["state"] == "UNKNOWN"
     state, divergence = rc._derive_state(normalized, [{"claim_id": "C1", "required_independent_clusters": 1}], 1)
-    assert (state, divergence) == ("INCONCLUSIVE", "CONSISTENT")
+    assert (state, divergence) == ("INCONCLUSIVE", "INSUFFICIENT_EVIDENCE")
 
 
 def test_model_fork_label_without_opposing_source_findings_fails_closed():
@@ -153,7 +175,7 @@ def test_model_fork_label_without_opposing_source_findings_fails_closed():
 
 def test_same_owner_urls_do_not_corroborate():
     p = proposal(rels=("SAME_OWNER", "SYNDICATED"))
-    assert rc._supported_cluster_count(p) == 0
+    assert rc._informative_cluster_count(p) == 0
 
 
 def test_unknown_or_forged_leader_fields_rejected():
