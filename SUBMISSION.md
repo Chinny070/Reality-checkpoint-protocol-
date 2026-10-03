@@ -21,18 +21,18 @@ Downstream contracts consume `get_certificate` and `is_checkpoint_usable`; provi
 ## Verified local gates
 
 - Python syntax compilation: passed for contract and both test modules.
-- Direct Mode: 17 passed, 0 failed.
-- Protocol helper/adversarial logic tests: 23 passed, 0 failed.
+- Direct Mode: 20 passed, 0 failed.
+- Protocol helper/adversarial logic tests: 27 passed, 0 failed.
 - GenVM AST lint: passed (3 checks; `genvm-lint` 0.11.0).
 - GenVM SDK semantic validation: passed with GenVM v0.2.16.
 - Schema: extracted; 10 methods (5 read-only, 5 write).
 - Direct Mode pickling check: included and passed.
-- Current source `386103fd…18f9cbf0` is deployed with byte-identical parity. On this exact source, live semantic revalidation created a contradiction successor, unavailable challenge preserved its parent, render retrievals were recorded (WHO claim UNKNOWN), composition was fresh/usable, and a reality fork was disputed/unusable. Exact proof bounds and transaction evidence are in `docs/EVIDENCE.md`.
+- Corrected source `2ca8e459…788a37d` is deployed at `0xbEFbE69a1723E637691a7c2De76b5d01D81a41A2` with exact byte parity. On this source, the live receipt proof finalized SUPPORTED with specific receipt facts committed, and the hostile same-domain contradictory challenge was rejected with MAJORITY_AGREE while the parent remained supported and usable. Semantic-delta, render, composition, and fork transactions for earlier sources remain version-specific historical evidence. Exact current proof bounds are in `docs/EVIDENCE.md`.
 
 ## Remaining review limits
 
-- Latest documentation and helper changes are pushed to GitHub `main`; the final remote-head SHA is verified in the release verification record.
-- Live future/self reference rejection finalized with `checkpoint not found`; immutable finalized-child DAG prevents back-edge insertion. On current source, an unavailable challenge preserved checkpoint 8 and a valid retry created supported successor 9, FRESH and usable.
+- Corrected release documentation and helper changes still need to be pushed and verified against GitHub `main`.
+- A cross-domain hostile challenge attempt finalized MAJORITY_DISAGREE; it is explicitly excluded from passing evidence. The live same-domain challenge rejection passed.
 - Owner-portfolio audit: reviewed all 51 public API-visible repositories (names/descriptions) and README-level detail for the seven closest overlaps. Decision Memory Protocol is the closest neighboring project; see `DECISION.md` for the substantive scope distinction and explicit rejection risk.
 - Ecosystem collision search: compared current official GenLayer docs and several public projects, including Intelligent Oracle, Lumen, and Internetcourt. This is a bounded collision assessment, not a novelty guarantee or coverage of private/unindexed projects.
 
@@ -44,8 +44,8 @@ Downstream contracts consume `get_certificate` and `is_checkpoint_usable`; provi
 - Local commit and blob IDs: recorded in `docs/RELEASE_VERIFICATION.md`.
 - Contract address / Explorer / deployment transaction / finality / source parity: recorded in `docs/RELEASE_VERIFICATION.md`.
 
-Only the specific live passes listed in `docs/EVIDENCE.md` are claimed. The required local, deployment, source-parity, live protocol, public owner-audit, and GitHub push gates are verified. The live WEB_RENDER_TEXT transaction observed both pages, but the WHO claim resolved UNKNOWN; this is recorded as a limitation rather than a supported fact. The closest portfolio collision is Decision Memory Protocol and is candidly differentiated in `DECISION.md`.
+Only the specific live passes listed in `docs/EVIDENCE.md` are claimed. Corrected local, deployment, source-parity, receipt-consensus, and hostile same-domain source-cluster gates are verified. Corrected-release GitHub push remains pending. Earlier render/revalidation/composition/fork transactions are version-specific; they are not presented as current-source proofs. The historical WEB_RENDER_TEXT transaction observed both pages, but the WHO claim resolved UNKNOWN; this remains a limitation. The closest portfolio collision is Decision Memory Protocol and is candidly differentiated in `DECISION.md`.
 
 ## Portal description draft (verified local facts only)
 
-Reality Checkpoint Protocol is a reusable GenLayer contract for consensus-backed certificates of bounded external state. Validators independently render or fetch evidence and classify claim states, source relationships, divergence, and semantic changes. Deterministic code enforces claim/source bounds, independence floors, freshness, immutable lineage, challenges, composition, and consumer usability. It exposes portable certificates for unrelated downstream contracts. The corrected local candidate passes 20 Direct Mode tests, 27 protocol/adversarial tests, GenVM lint (3 checks), and schema extraction (10 methods). Its deployment and live proof gates are not green until the new source is deployed and verified; older deployment evidence is not attributed to this source. Source-versioned evidence is summarized in `docs/EVIDENCE.md`.
+Reality Checkpoint Protocol is a reusable GenLayer contract for consensus-backed certificates of bounded external state. Validators independently render or fetch evidence and classify claim states, source relationships, divergence, and semantic changes. Deterministic code enforces claim/source bounds, independence floors, freshness, immutable lineage, challenges, composition, and consumer usability. It exposes portable certificates for unrelated downstream contracts. The corrected candidate passes 20 Direct Mode tests, 27 protocol/adversarial tests, GenVM lint (3 checks), and schema extraction (10 methods); it is deployed with exact source parity. The live receipt-consensus and hostile same-domain challenge proofs passed. Older feature proofs are not attributed to this source. Source-versioned evidence is summarized in `docs/EVIDENCE.md`.

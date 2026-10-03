@@ -24,11 +24,11 @@ Run the suites separately: `python -m pytest tests/test_protocol.py -q` for pure
 |---|---|
 | Branch | `main` |
 | Remote | `https://github.com/Chinny070/Reality-checkpoint-protocol-` |
-| Current candidate contract SHA-256 | `386103fd111f6280b94f78a9508084e1ba72503d1d7824de5189d75218f9cbf0` |
-| Current candidate Git blob | `7fdd13c2606223fbaf9ec516f3716a829f3d49de` |
-| Deployed source commit | `42e3b5d4376dafb87a580c610d133010b8a61127` |
-| Deployed source hashes | `fd0969dc0d7b1d9df4b13be0c5de65c91757d5edece3884c6f15f61c4b29f7e2` and earlier `dcf3c321b8d598e24d2d91f6a7c4aae9e0cfd272563dcaf15eb3789e79d4fda7` |
-| Current source deployment parity | PASS: `386103fd…18f9cbf0`, byte-identical, 53,413 bytes |
+| Corrected candidate contract SHA-256 | `2ca8e45982d88184b845df6441a9e6c2667af9ecc2bed88754964d8bb788a37d` |
+| Corrected candidate Git blob | `c7b915d9a137a25646b6ca4468f5cb154c371c2b` |
+| Corrected source commit | `66d87907b04ab8b7490ace2f02403be177350a98` |
+| Historical deployed source hashes | `386103fd…18f9cbf0`, `fd0969dc…f7e2`, and earlier sources |
+| Corrected source deployment parity | PASS: byte-identical, 59,431 bytes |
 | Previous evidence-record commit | `37f670b1fc62a9fba39344ca71195e6c32dd4f77` |
 | Git metadata | `.gitmeta`; explicit `--git-dir` / `--work-tree` used due inherited `.git` ownership mismatch |
 
@@ -36,16 +36,16 @@ Run the suites separately: `python -m pytest tests/test_protocol.py -q` for pure
 
 | Field | Verified value |
 |---|---|
-| Previously verified contract (source `dcf3…fda7`) | `0x69570326e3120c2b9EB96Cc471b235b6adE91501` |
-| Previous deployment tx | `0x3424b0007d4631fc45215ace751c17d61a477bca4c316aba7e5eeca7322453f3` |
-| Previous Explorer | <https://explorer-studio.genlayer.com/tx/0x3424b0007d4631fc45215ace751c17d61a477bca4c316aba7e5eeca7322453f3> |
+| Corrected contract | `0xbEFbE69a1723E637691a7c2De76b5d01D81a41A2` |
+| Corrected deployment tx | `0xff8d674e59804edeeadf085a2fc122d5726e9068cc7c217a538ec1742ca88bdd` |
+| Corrected Explorer | <https://explorer-studio.genlayer.com/tx/0xff8d674e59804edeeadf085a2fc122d5726e9068cc7c217a538ec1742ca88bdd> |
 | Lifecycle | `FINALIZED` |
 | GenVM | `SUCCESS` |
-| Consensus | `Accepted` |
+| Consensus | `MAJORITY_AGREE` |
 
-The earlier source at SHA-256 `fd0969dc…f7e2` was deployed at `0xdF1BF015f0d6a136Fc8c89020E1F9D122e9aDaEf`; source `450dd5c8…56df7` at `0x91d0F2b43E79666c49c0000b15b98630c6Fc64Fc`; source `c184f679…b340c4` at `0x74c493206438256A358B2448BBD36Ac4524c22ef`; and source `133bec36…c49bace` at `0x2dFBBB86bcfc85493732AcA9e028e570a41D6a7A`. Canonical source `386103fd…18f9cbf0` is deployed at `0xDc01B2807A2D9285C9F9359930b8076ac89d6688` via `0xc953efe708125c4bec7669398e368c9f84184e1fb392638b80cec279073166c6` (FINALIZED, GenVM SUCCESS, MAJORITY_AGREE). Exported bytes match exactly (53,413 bytes); live schema exposes 10 methods. Python JSON-RPC verifier received HTTP 403; source and schema were checked with the authenticated GenLayer CLI.
+Historical deployments are listed in the source-versioned evidence below. For the corrected source, Python JSON-RPC returned HTTP 403; exact SDK/CLI export and schema reads succeeded and source parity was byte-identical.
 
-## Live protocol transactions
+## Historical live protocol transactions (through source `386103fd…18f9cbf0`)
 
 | Proof | Transaction(s) | Verified result |
 |---|---|---|
@@ -64,37 +64,53 @@ The earlier source at SHA-256 `fd0969dc…f7e2` was deployed at `0xdF1BF015f0d6a
 | Live composite | `0x276905036761a8773a0147511ab6af1814c50c0377cc28da2d63022133dedb24` | FINALIZED; composite checkpoint 5 SUPPORTED/CONSISTENT; children `[3,4]`; certificate FRESH; usable `true` |
 | Corrected-source fork checkpoint | `0xbc605065d4545470b02a78e56de4067e6e28bcc6d3a1755c43959ac2e5a11dab` | FINALIZED; checkpoint ID 6 |
 | Corrected-source fork resolution | `0xe83e278319e95b9890bc799b6c58d7a10636dc2fc0522c9333dcea799ebd650f` | FINALIZED; opposing SUPPORTED/CONTRADICTED findings; DISPUTED/CONTRADICTORY_REALITY; usable `false` |
-| Corrected-source unavailable challenge | `0x7bba240a174fa8beeba606bbdcff3062ee822a552b9dbe35331c31710f33981e` | FINALIZED; challenge output PRESERVED_PRIOR; cp3 remains FINALIZED and usable. Receipt 5 exposed missing claim binding for the appended challenge source; current candidate fixes this and needs re-deployment/live check. |
+| Prior-source unavailable challenge | `0x7bba240a174fa8beeba606bbdcff3062ee822a552b9dbe35331c31710f33981e` | FINALIZED; challenge output PRESERVED_PRIOR; cp3 remains FINALIZED and usable. Receipt 5 exposed missing claim binding for the appended challenge source; the present candidate fixes it. |
 | Material-delta revalidation attempt | `0x5822d463ecc56d93b2cb67deeb399e0cab5d96103c5ede6bc99131f4f9998764` | UNDETERMINED because validators disagreed. Not a pass; material delta remains unverified live. |
-| Current-source supported parent create | `0xfb18bf5fb8055f09e51a656c6e93b70c0faf8735ca9ac8cebcce712582b936af` | FINALIZED; checkpoint ID 1 |
-| Current-source supported parent resolve | `0x33c55f4c2681df36e42a2530d6a42b586a982e7b3c6fc59f4a3f71c019c196a8` | FINALIZED; both independent echo findings SUPPORTED; checkpoint 1 FINALIZED |
-| Current-source challenge failure proof | `0xd1dfb3b11ed349107aa60bcf21796d89a2100b3b53536878a19466dc6621b94b` | FINALIZED; PRESERVED_PRIOR; source S3 observation EXTERNAL_FAILURE; attempt receipt 2 contains `claim_ids=["C1"]`; checkpoint 1 remains FINALIZED/SUPPORTED |
+| Source-386103fd supported parent create | `0xfb18bf5fb8055f09e51a656c6e93b70c0faf8735ca9ac8cebcce712582b936af` | FINALIZED; checkpoint ID 1 |
+| Source-386103fd supported parent resolve | `0x33c55f4c2681df36e42a2530d6a42b586a982e7b3c6fc59f4a3f71c019c196a8` | FINALIZED; both independent echo findings SUPPORTED; checkpoint 1 FINALIZED |
+| Source-386103fd challenge failure proof | `0xd1dfb3b11ed349107aa60bcf21796d89a2100b3b53536878a19466dc6621b94b` | FINALIZED; PRESERVED_PRIOR; source S3 observation EXTERNAL_FAILURE; attempt receipt 2 contains `claim_ids=["C1"]`; checkpoint 1 remains FINALIZED/SUPPORTED |
 
 Explorer transaction links and exact evidence hashes are in `EVIDENCE.md`. The exploratory wrong-ID transaction `0x06be77c3e1ba498655e7a3951808a7a85c49000d84700acfddb845b600f9d537` finalized as `checkpoint not found`; it is excluded from passing proofs.
 
-## Canonical candidate proofs (`386103fd…18f9cbf0`)
+## Historical candidate proofs (`386103fd…18f9cbf0`)
 
 The exact live transaction IDs and evidence hashes are documented in [EVIDENCE.md](EVIDENCE.md). On this deployed source: time-cutoff semantic contradiction created successor 2; unavailable challenges preserved their parents, and checkpoint 8's valid retry created supported successor 9; live render retrievals were observed with WHO claim UNKNOWN and example.com SUPPORTED; composite 6 from children 4/5 was SUPPORTED/CONSISTENT, FRESH and usable; fork 7 was DISPUTED/CONTRADICTORY_REALITY and unusable; and a future/self child reference was rejected with `checkpoint not found`. Render retrieval is proven, a fully supported WHO render claim is not. Composition future/self rejection is proven; no separately constructed cycle can be submitted through the already-finalized-child API.
 
-The current local tree also contains documentation and live transaction helper changes after source commit `42e3b5d4376dafb87a580c610d133010b8a61127`. The contract source itself remains byte-for-byte the deployed candidate. Final documentation commit and contract blob IDs are listed in the final release row after commit.
+These proofs apply only to the source hash in this heading.
+
+## Corrected candidate live proofs (`2ca8e459…788a37d`)
+
+| Proof | Transaction | Verified result |
+|---|---|---|
+| Deployment | [`0xff8d674e59804edeeadf085a2fc122d5726e9068cc7c217a538ec1742ca88bdd`](https://explorer-studio.genlayer.com/tx/0xff8d674e59804edeeadf085a2fc122d5726e9068cc7c217a538ec1742ca88bdd) | FINALIZED, GenVM SUCCESS, MAJORITY_AGREE; contract `0xbEFbE69a1723E637691a7c2De76b5d01D81a41A2` |
+| Receipt proof checkpoint | [`0x8d054c3316f87e3eb995f6a47ad1d9bba6f118c7a5d9eb9634f5e8e4cf824c50`](https://explorer-studio.genlayer.com/tx/0x8d054c3316f87e3eb995f6a47ad1d9bba6f118c7a5d9eb9634f5e8e4cf824c50) | FINALIZED, MAJORITY_AGREE; checkpoint 1 |
+| Validator-bound receipt resolution | [`0xd083cf617f7e13c38a4359b1d20b32fb235a2aff8f5c56959b15a55a062b7984`](https://explorer-studio.genlayer.com/tx/0xd083cf617f7e13c38a4359b1d20b32fb235a2aff8f5c56959b15a55a062b7984) | FINALIZED, MAJORITY_AGREE; SUPPORTED/CONSISTENT, FRESH and usable; on-chain receipt exposes two observed content hashes and consensus-bound evidence root |
+| Hostile test parent | [`0x41609c283a02b654b485442f0e35224b7c1f71974da12720a36050a5a6db0a98`](https://explorer-studio.genlayer.com/tx/0x41609c283a02b654b485442f0e35224b7c1f71974da12720a36050a5a6db0a98) and [`0x224bd9fc31e5a442030185a924c978fb5678625fbc2e74cff3cc7ad13f6b1509`](https://explorer-studio.genlayer.com/tx/0x224bd9fc31e5a442030185a924c978fb5678625fbc2e74cff3cc7ad13f6b1509) | Both FINALIZED, MAJORITY_AGREE; checkpoint 2 SUPPORTED and usable before attack |
+| Hostile same-domain contradictory challenge | [`0x10ce7764cfa6d0f59cba0c332b889eb19598eb824c0b7da9992923b8ac18b1b4`](https://explorer-studio.genlayer.com/tx/0x10ce7764cfa6d0f59cba0c332b889eb19598eb824c0b7da9992923b8ac18b1b4) | FINALIZED, MAJORITY_AGREE; deterministic rejection `challenge source must use a new domain cluster`; checkpoint fingerprint/state digest unchanged, no successor, no challenge-count increase, remains usable |
+| Cross-domain hostile challenge diagnostic | [`0xbfbfcfa1ea2ca560c7659ffb785682f50083d838c63fba7e85302a65b915eacc`](https://explorer-studio.genlayer.com/tx/0xbfbfcfa1ea2ca560c7659ffb785682f50083d838c63fba7e85302a65b915eacc) | FINALIZED, MAJORITY_DISAGREE; not a passing proof; parent unchanged |
+
+The Python JSON-RPC source verifier returned HTTP 403. The authenticated SDK exported the source (59,431 bytes) and it matched SHA-256 exactly; the CLI verified the 10-method schema and deployment receipt.
 
 ## Submission-gate status
 
 | Gate | Status |
 |---|---|
-| Current candidate tests, lint, schema | GREEN |
-| Current candidate Studionet deployment and source parity | GREEN |
+| Corrected candidate tests, lint, schema | GREEN: 20 Direct Mode + 27 protocol tests; GenVM lint 3 checks; 10-method schema |
+| Corrected candidate Studionet deployment and source parity | GREEN: FINALIZED, MAJORITY_AGREE; exact 59,431-byte source match |
+| Corrected-source live validator-bound receipt proof | GREEN: on-chain receipt facts and evidence root are included in the accepted consensus result |
+| Corrected-source live hostile same-domain contradictory challenge | GREEN: deterministic rejection; parent unchanged, supported, usable |
+| Cross-domain hostile challenge live consensus | NOT GREEN: finalized MAJORITY_DISAGREE; excluded from passing evidence |
 | Previous byte-identical source live web-render evidence | GREEN |
-| Current-source live WEB_RENDER_TEXT | GREEN for on-chain retrieval and observation receipts; example.com claim SUPPORTED, WHO claim UNKNOWN (no fully supported WHO claim asserted) |
+| Prior-source live WEB_RENDER_TEXT | GREEN for on-chain retrieval and observation receipts; example.com claim SUPPORTED, WHO claim UNKNOWN (no fully supported WHO claim asserted) |
 | Previous byte-identical source live Reality Fork Detection and unusable disputed certificate | GREEN |
-| Live no-change revalidation successor | GREEN on earlier source `fd0969dc…f7e2`; current source's material contradiction successor is independently GREEN |
-| Live material semantic delta | GREEN on current source: two independent contradictions, CONTRADICTION delta, successor created |
-| Live composite checkpoint | GREEN on current source; future/self reference rejected; see qualification above |
-| Live transport failure preserving a prior checkpoint | GREEN on current source; failed source binds C1; parent unchanged |
+| Prior-source no-change revalidation successor | GREEN on earlier source `fd0969dc…f7e2` |
+| Prior-source live material semantic delta | GREEN on source `386103fd…18f9cbf0`: two independent contradictions, CONTRADICTION delta, successor created |
+| Prior-source live composite checkpoint | GREEN on source `386103fd…18f9cbf0`; future/self reference rejected; see qualification above |
+| Prior-source live transport failure preserving a checkpoint | GREEN on source `386103fd…18f9cbf0`; failed source binds C1; parent unchanged |
 | Initial failed-checkpoint recovery | Intentional terminal semantics: initial INCONCLUSIVE/UNAVAILABLE checkpoints cannot be revived; create a replacement checkpoint |
-| Supplemental challenge admission | GREEN locally: unavailable or non-independent source preserves parent and does not consume challenge rounds; live proof required against corrected deployed source |
+| Supplemental challenge admission | GREEN locally and for same-domain live hostile proof; validator-classified cross-domain challenge path requires further live evidence |
 | Live WEB_RENDER_TEXT | GREEN for actual rendered-source retrieval/evidence; WHO remains UNKNOWN, so no fully supported WHO claim |
-| GitHub push | Latest release audit documentation pushed; local and remote `main` heads matched at release close |
+| GitHub push | Pending for this corrected release commit |
 | Public owner portfolio audit | GREEN within scope: 51 public repo names/descriptions reviewed, seven closest README reviews; Decision Memory overlap/rejection risk disclosed in `DECISION.md` |
 
 The project must not be marked frozen, finalized, or submission-ready while any required live proof above remains incomplete. Older challenge-recovery transaction evidence applies only to the prior deployed source and does not establish behavior of the corrected source. A failure to meet a live gate is not relabeled as an external connectivity block when the chain is reachable and the attempt yielded a protocol outcome.

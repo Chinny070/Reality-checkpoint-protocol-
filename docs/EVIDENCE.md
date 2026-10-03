@@ -21,6 +21,27 @@ Contract used for the successful fork/render transactions: `0x69570326e3120c2b9E
 - Both claims were `SUPPORTED` on the initial observation, relationships `INDEPENDENT`, divergence `CONSISTENT`, and the source response declared no external failure.
 - The leader receipt returned checkpoint 2 `FINALIZED` and receipt 2. Explorer: <https://explorer-studio.genlayer.com/tx/0x7799c664640f661294de744ab4dfe09c9dc545436de47cd45c394bbebdb9a390>.
 
+## Corrected candidate: receipt binding and challenge admission (2026-10-03)
+
+Contract SHA-256: `2ca8e45982d88184b845df6441a9e6c2667af9ecc2bed88754964d8bb788a37d`; Git blob `c7b915d9a137a25646b6ca4468f5cb154c371c2b`; source commit `66d87907b04ab8b7490ace2f02403be177350a98`. Studionet contract: `0xbEFbE69a1723E637691a7c2De76b5d01D81a41A2`; deployment transaction [0xff8d674e59804edeeadf085a2fc122d5726e9068cc7c217a538ec1742ca88bdd](https://explorer-studio.genlayer.com/tx/0xff8d674e59804edeeadf085a2fc122d5726e9068cc7c217a538ec1742ca88bdd) finalized `MAJORITY_AGREE`, GenVM `SUCCESS`, with all five deployment validators agreeing. The deployed source export is 59,431 bytes and byte-identical to the local source (SHA-256 above). The deployed schema exposes the same 10 expected methods. The direct JSON-RPC verifier returned HTTP 403; exact code export and schema verification succeeded through the authenticated GenLayer SDK/CLI.
+
+### Validator-bound receipt proof
+
+- Checkpoint creation: [0x8d054c3316f87e3eb995f6a47ad1d9bba6f118c7a5d9eb9634f5e8e4cf824c50](https://explorer-studio.genlayer.com/tx/0x8d054c3316f87e3eb995f6a47ad1d9bba6f118c7a5d9eb9634f5e8e4cf824c50), finalized `MAJORITY_AGREE`, checkpoint 1.
+- Resolution: [0xd083cf617f7e13c38a4359b1d20b32fb235a2aff8f5c56959b15a55a062b7984](https://explorer-studio.genlayer.com/tx/0xd083cf617f7e13c38a4359b1d20b32fb235a2aff8f5c56959b15a55a062b7984), finalized `MAJORITY_AGREE`; checkpoint 1 became `FINALIZED / SUPPORTED / CONSISTENT`, certificate `FRESH`, usable `true`.
+- Receipt 1 binds S1 `https://example.com/` to `WEB_GET_TEXT`, content SHA-256 `25ddf2c883e0d1958ea971d279a7e4f0fd446724ee3db7db19dadabd4a62e484`, zero render hash, `rcp-v1`, and `OBSERVED`.
+- It binds S2 `https://www.iana.org/domains/reserved` to `WEB_GET_TEXT`, content SHA-256 `4a836e33450dce1f57ecc81bf9a5695279798adba4777a22271f321b6ab70010`, zero render hash, `rcp-v1`, and `OBSERVED`.
+- Exact evidence root: `adead5629676257065931d0d6d1af183c782dbb40cb4540b7426fbaabcdcaa9a`; consensus digest: `5eb5d761b66f215a9980c67a323aaf7082fb928f1e7431fcd747c6dbed8efe10`; checkpoint fingerprint: `c5a960dd0fbffc94d595fc085dd522873f25ae179517d62f679b24ddad4959ed`.
+- `MAJORITY_AGREE` means the network accepted the validator-equivalent result. It does not publish each validator's raw web-fetch log; the protocol commits the common receipt facts and hashes.
+
+### Live hostile source-cluster proof
+
+- Parent checkpoint 2 was created at [0x41609c283a02b654b485442f0e35224b7c1f71974da12720a36050a5a6db0a98](https://explorer-studio.genlayer.com/tx/0x41609c283a02b654b485442f0e35224b7c1f71974da12720a36050a5a6db0a98) and resolved at [0x224bd9fc31e5a442030185a924c978fb5678625fbc2e74cff3cc7ad13f6b1509](https://explorer-studio.genlayer.com/tx/0x224bd9fc31e5a442030185a924c978fb5678625fbc2e74cff3cc7ad13f6b1509). It was `FINALIZED / SUPPORTED`, certificate usable `true`. C1 was grounded in `https://httpbin.org/html`.
+- The hostile source at `https://httpbin.org/base64/...` returned text explicitly contradicting C1 but shares the existing `httpbin.org` cluster.
+- Challenge transaction [0x10ce7764cfa6d0f59cba0c332b889eb19598eb824c0b7da9992923b8ac18b1b4](https://explorer-studio.genlayer.com/tx/0x10ce7764cfa6d0f59cba0c332b889eb19598eb824c0b7da9992923b8ac18b1b4) finalized `MAJORITY_AGREE`. Leader and validators returned the deterministic error `challenge source must use a new domain cluster`; no nondeterministic source observation was admitted.
+- Afterward checkpoint 2 retained fingerprint `5a6a3deb6aba76339c1ff8ad73bb814adff99931604bdcc7e760004b796d1245`, consensus digest `d2505477c50c1381ac6dbac8652a2c2563fd0f1419f6746375469a954d10ceea`, and state digest `380ca50cb263eed4dd4bcd345fbb9e87eb6e5f3a7a66697a06a934616c40b378`; `challenge_count=0`, `successor_id=0`, `state_status=SUPPORTED`, and usability remained `true`.
+- A separate cross-domain hostile attempt [0xbfbfcfa1ea2ca560c7659ffb785682f50083d838c63fba7e85302a65b915eacc](https://explorer-studio.genlayer.com/tx/0xbfbfcfa1ea2ca560c7659ffb785682f50083d838c63fba7e85302a65b915eacc) finalized `MAJORITY_DISAGREE`. Its leader returned `PRESERVED_PRIOR`, but validators did not reach consensus. This is recorded as a failed live attempt, not a passing proof; checkpoint 1 remained unchanged and usable.
+
 ### Revalidation boundary
 
 - Revalidation tx: `0xbaffa0523d997fe27d49d73630e222d9fdf78693a329b301f504b547cb486abf` (finalized, `MAJORITY_AGREE`).
@@ -63,7 +84,7 @@ The later diagnostic deployment `0xB9f9e09571679e719184b751baf600dec9d5841B` use
 
 The live material-delta attempt against the previous source was UNDETERMINED after validator disagreement; no material-change PASS is claimed for this source.
 
-## Canonical source `386103fd…18f9cbf0`
+## Historical source `386103fd…18f9cbf0`
 
 Canonical source SHA-256: `386103fd111f6280b94f78a9508084e1ba72503d1d7824de5189d75218f9cbf0`. Deployment tx `0xc953efe708125c4bec7669398e368c9f84184e1fb392638b80cec279073166c6` finalized with MAJORITY_AGREE / GenVM SUCCESS at `0xDc01B2807A2D9285C9F9359930b8076ac89d6688`. CLI-exported source is byte-identical (53,413 bytes), and live schema has 10 methods. Explorer: <https://explorer-studio.genlayer.com/tx/0xc953efe708125c4bec7669398e368c9f84184e1fb392638b80cec279073166c6>.
 
@@ -105,7 +126,7 @@ Canonical source SHA-256: `386103fd111f6280b94f78a9508084e1ba72503d1d7824de5189d
 
 ## Current proof boundary
 
-The transaction matrix for each deployed hash is source-version-specific. Current source `386103fd…18f9cbf0` has passed successor semantic contradiction, fail-closed challenge preservation and subsequent successful challenge recovery, live WEB_RENDER_TEXT retrieval, supported composition, fork detection, and future/self-reference rejection. The WHO semantic claim remained UNKNOWN in the render proof. Do not upgrade that render limitation to a fully supported claim.
+The transaction matrix is source-version-specific. Source `386103fd…18f9cbf0` passed successor semantic contradiction, fail-closed challenge preservation, live WEB_RENDER_TEXT retrieval, supported composition, fork detection, and future/self-reference rejection. The corrected source `2ca8e459…788a37d` passed the validator-bound receipt proof and hostile same-domain source-cluster rejection recorded above. The WHO semantic claim remained UNKNOWN in the historical render proof. Do not upgrade that render limitation to a fully supported claim or transfer any proof across source versions.
 
 ## Revised source `133bec360911bb5cc4cfdef32330bcadb13e61c74a92b1f3bd9641d04c49bace`
 

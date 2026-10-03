@@ -26,7 +26,7 @@ It writes the raw lifecycle result, schema method comparison, and local/deployed
 
 ## Previous Studionet deployment (2026-10-02)
 
-The current canonical deployment was submitted to Studionet and verified in Explorer:
+Historical deployment (source hash `dcf3c321…d4fda7`) verified in Explorer:
 
 - Contract: `0x69570326e3120c2b9EB96Cc471b235b6adE91501`
 - Deployment transaction: `0x3424b0007d4631fc45215ace751c17d61a477bca4c316aba7e5eeca7322453f3`
@@ -34,11 +34,19 @@ The current canonical deployment was submitted to Studionet and verified in Expl
 - Explorer lifecycle: `FINALIZED`; GenVM `SUCCESS`; consensus `Accepted`.
 - Local and deployed contract bytes matched at the time (SHA-256 `dcf3c321b8d598e24d2d91f6a7c4aae9e0cfd272563dcaf15eb3789e79d4fda7`).
 
-Earlier source versions provided initial render, fork, supported-state, successor, composition, and challenge-preservation evidence. Current canonical source `386103fd111f6280b94f78a9508084e1ba72503d1d7824de5189d75218f9cbf0` is deployed at `0xDc01B2807A2D9285C9F9359930b8076ac89d6688` via finalized transaction `0xc953efe708125c4bec7669398e368c9f84184e1fb392638b80cec279073166c6`; source parity is byte-identical (53,413 bytes), and the live schema exposes ten methods. Its live time-cutoff successor, fail-closed challenge and later recovery successor, render retrieval, composition, fork, and future/self-reference rejection proofs are recorded in [EVIDENCE.md](EVIDENCE.md) and [RELEASE_VERIFICATION.md](RELEASE_VERIFICATION.md). No live cycle can be formed through the finalized-child-only API.
+Historical source `386103fd111f6280b94f78a9508084e1ba72503d1d7824de5189d75218f9cbf0` was deployed at `0xDc01B2807A2D9285C9F9359930b8076ac89d6688`; its prior live proofs are version-specific and do not establish corrected-source behavior.
 
-## Required live proofs
+## Corrected source deployment (2026-10-03)
 
-1. **Observed, claim result limited:** current source WEB_RENDER_TEXT transaction retrieved WHO and example.com. WHO claim was UNKNOWN; example.com claim SUPPORTED; overall INCONCLUSIVE. Render observations are not described as a fully supported render checkpoint.
+- Source SHA-256: `2ca8e45982d88184b845df6441a9e6c2667af9ecc2bed88754964d8bb788a37d` (Git blob `c7b915d9a137a25646b6ca4468f5cb154c371c2b`; source commit `66d87907b04ab8b7490ace2f02403be177350a98`).
+- Contract: `0xbEFbE69a1723E637691a7c2De76b5d01D81a41A2`.
+- Deployment transaction: [0xff8d674e59804edeeadf085a2fc122d5726e9068cc7c217a538ec1742ca88bdd](https://explorer-studio.genlayer.com/tx/0xff8d674e59804edeeadf085a2fc122d5726e9068cc7c217a538ec1742ca88bdd), FINALIZED, GenVM SUCCESS, MAJORITY_AGREE.
+- Exported source matched byte-for-byte (59,431 bytes); the live schema exposed all 10 expected methods. The Python JSON-RPC verifier returned HTTP 403; authenticated GenLayer SDK/CLI export and schema reads succeeded.
+- Validator-bound receipt proof and hostile same-domain source rejection both finalized with `MAJORITY_AGREE`; the latter preserved checkpoint 2 as SUPPORTED and usable. Full transaction hashes and receipt facts are in [EVIDENCE.md](EVIDENCE.md).
+
+## Historical live proofs on earlier source versions
+
+1. **Historical, claim result limited:** earlier WEB_RENDER_TEXT transaction retrieved WHO and example.com. WHO claim was UNKNOWN; example.com claim SUPPORTED; overall INCONCLUSIVE. Render observations are not described as a fully supported render checkpoint.
 2. **Passed:** time-cutoff revalidation created successor checkpoint 2 with `CONTRADICTION` claim delta and predecessor 1; successor was DISPUTED/unusable.
 3. **Passed:** source fork with one SUPPORTED and one CONTRADICTED finding; finalized `DISPUTED` / `CONTRADICTORY_REALITY`, usability false.
 4. **Passed:** composition of supported checkpoints 4 and 5 yielded checkpoint 6, SUPPORTED/CONSISTENT, FRESH and usable.
