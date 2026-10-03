@@ -6,4 +6,4 @@ Domain clustering is a conservative identity signal, not proof of legal ownershi
 
 Example: five URLs grouped as three syndicated pages under one cluster, one derivative report, and one independent source yield one supported independent cluster—not five.
 
-The relationship classification is a consensus-backed judgment, not perfect ownership graph knowledge or cryptographic proof. Unknown relationships never increase the independent count.
+The relationship classification is a consensus-backed judgment, not perfect ownership graph knowledge or cryptographic proof. Unknown relationships never increase the independent count. A challenge-added source must bind the challenged claim, use a previously unrepresented registrable domain for that claim, retrieve successfully, classify as `INDEPENDENT`, and satisfy that claim's frozen independent-cluster floor. A source failing any condition is rejected without persistent storage, cannot create a successor, and cannot consume one of the bounded challenge rounds. This prevents permissionless rejected submissions from growing contract storage. Declared owner text alone is not authority.

@@ -2,13 +2,13 @@
 
 Each source observation is bound to checkpoint and source definitions, retrieval kind, normalized content hash, render hash (or all-zero value for non-render retrieval), normalization version, and observation status. Evidence identity excludes model rationale.
 
-Dynamic rendered content is not compared by byte equality between validators. Each validator extracts and classifies typed facts independently; consensus compares normalized facts and decision-critical states.
+Every validator independently retrieves evidence and compares receipt source binding, retrieval kind, render/content hashes, normalization version, and observation status against its own fetch before those hashes enter a consensus-bound evidence root. Dynamic content that changes between observations therefore fails equivalence. Classifier rationale is not part of evidence identity.
 
 Transport/render failure creates an explicit external-failure observation. It must never be re-labeled as a contradiction or as support. Receipts preserve source/claim deltas and evidence root so consumers can audit the reason for a state transition.
 
 ## Studionet verification record (2026-10-02)
 
-These transactions were run against source hash `dcf3c321b8d598e24d2d91f6a7c4aae9e0cfd272563dcaf15eb3789e79d4fda7`, which matched the deployed bytes. They remain valid evidence for that exact source version. A later transaction exposed a missing-model-finding execution error; the corrected candidate has SHA-256 `fd0969dc0d7b1d9df4b13be0c5de65c91757d5edece3884c6f15f61c4b29f7e2` and must be redeployed and live-verified before these results are attributed to it.
+Transactions below are versioned evidence for the source hashes and addresses shown; none is proof for a later contract version. The currently corrected candidate requires its own deployment parity and live proofs before its behavior can be attributed to the network.
 
 Contract used for the successful fork/render transactions: `0x69570326e3120c2b9EB96Cc471b235b6adE91501`.
 

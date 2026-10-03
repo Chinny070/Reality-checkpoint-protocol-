@@ -78,7 +78,7 @@ def test_syndicated_sources_fail_independence_floor(direct_deploy, direct_vm):
     assert contract.is_checkpoint_usable(cp) is False
 
 
-def test_opposite_source_states_force_disputed_even_if_llm_says_consistent(direct_deploy, direct_vm):
+def test_independent_opposite_source_states_force_disputed_even_if_llm_says_consistent(direct_deploy, direct_vm):
     contract = setup_contract(direct_deploy, direct_vm, observation("SUPPORTED", "CONTRADICTED", "CONSISTENT"))
     cp = contract.create_checkpoint("subject", "title", "question", json.dumps(CLAIMS), json.dumps(SOURCES), 3600, 300, 1)
     result = json.loads(contract.resolve_checkpoint(cp))
@@ -87,6 +87,20 @@ def test_opposite_source_states_force_disputed_even_if_llm_says_consistent(direc
     assert certificate["state_status"] == "DISPUTED"
     assert certificate["divergence_status"] == "CONTRADICTORY_REALITY"
     assert contract.is_checkpoint_usable(cp) is False
+
+
+def test_nonindependent_contradiction_does_not_create_fork_or_block(direct_deploy, direct_vm):
+    result = json.loads(observation("SUPPORTED", "CONTRADICTED", "CONSISTENT"))
+    result["relationships"][1]["relationship"] = "SYNDICATED"
+    contract = setup_contract(direct_deploy, direct_vm, json.dumps(result))
+    claims = json.loads(json.dumps(CLAIMS))
+    claims[0]["required_independent_clusters"] = 1
+    cp = contract.create_checkpoint("subject", "title", "question", json.dumps(claims), json.dumps(SOURCES), 3600, 300, 1)
+    outcome = json.loads(contract.resolve_checkpoint(cp))
+    certificate = json.loads(contract.get_certificate(cp))
+    assert outcome["outcome"] == "FINALIZED"
+    assert certificate["state_status"] == "SUPPORTED"
+    assert certificate["divergence_status"] == "CONSISTENT"
 
 
 def test_informative_contradictions_override_insufficient_summary(direct_deploy, direct_vm):
@@ -159,6 +173,25 @@ def test_validator_rejects_changed_independent_observation(direct_deploy, direct
     assert direct_vm.run_validator() is False
 
 
+def test_validator_rejects_leader_receipt_hash_tampering(direct_deploy, direct_vm):
+    contract = setup_contract(direct_deploy, direct_vm)
+    cp = contract.create_checkpoint("subject", "title", "question", json.dumps(CLAIMS), json.dumps(SOURCES), 3600, 300, 2)
+    contract.resolve_checkpoint(cp)
+    direct_vm.clear_mocks()
+    direct_vm.mock_web(r"status\.example\.test", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"independent\.example\.net", {"status": 200, "body": "Operational"})
+    direct_vm.mock_llm("You are an evidence classifier", observation())
+    forged = json.loads(observation())
+    forged["evidence_receipts"] = [
+        {"source_id": source["source_id"], "url": source["url"],
+         "retrieval_kind": source["retrieval_kind"], "render_hash": "0" * 64,
+         "content_hash": "f" * 64, "normalization_version": "rcp-v1",
+         "observation_status": "OBSERVED"}
+        for source in SOURCES
+    ]
+    assert direct_vm.run_validator(leader_result=json.dumps(forged)) is False
+
+
 def test_nondeterministic_closures_are_picklable(direct_deploy, direct_vm):
     direct_vm.check_pickling = True
     contract = setup_contract(direct_deploy, direct_vm)
@@ -221,12 +254,12 @@ def test_challenge_adds_new_source_only_to_successor(direct_deploy, direct_vm):
     direct_vm.clear_mocks()
     direct_vm.mock_web(r"status\.example\.test", {"status": 200, "body": "Operational"})
     direct_vm.mock_web(r"independent\.example\.net", {"status": 200, "body": "Operational"})
-    direct_vm.mock_web(r"challenge\.example\.test", {"status": 200, "body": "Incident"})
+    direct_vm.mock_web(r"challenge\.example\.org", {"status": 200, "body": "Incident"})
     challenged = json.loads(observation("SUPPORTED", "CONTRADICTED", "CONTRADICTORY_REALITY"))
     challenged["claims"][0]["source_findings"].append({"source_id": "S3", "state": "CONTRADICTED"})
     challenged["relationships"].append({"source_id": "S3", "relationship": "INDEPENDENT", "cluster_id": "C"})
     direct_vm.mock_llm("You are an evidence classifier", json.dumps(challenged))
-    new_source = {"source_id": "S3", "url": "https://challenge.example.test/report", "role": "CHALLENGE",
+    new_source = {"source_id": "S3", "url": "https://challenge.example.org/report", "role": "CHALLENGE",
                   "retrieval_kind": "WEB_GET_TEXT", "declared_owner": "New publisher", "claim_ids": ["C1"]}
     outcome = json.loads(contract.challenge(cp, "C1", "FACTUAL_ERROR", "Independent incident report", json.dumps(new_source)))
     successor = json.loads(contract.get_checkpoint(outcome["checkpoint_id"]))
@@ -261,21 +294,49 @@ def test_failed_challenge_receipt_binds_added_source_to_claim(direct_deploy, dir
     direct_vm.clear_mocks()
     direct_vm.mock_web(r"status\.example\.test", {"status": 200, "body": "Operational"})
     direct_vm.mock_web(r"independent\.example\.net", {"status": 200, "body": "Operational"})
-    direct_vm.mock_web(r"challenge\.example\.test", {"status": 503, "body": "unavailable"})
+    direct_vm.mock_web(r"challenge\.example\.org", {"status": 503, "body": "unavailable"})
     failed = json.loads(observation("SUPPORTED", "SUPPORTED", "CONSISTENT"))
     failed["claims"][0]["source_findings"].append({"source_id": "S3", "state": "UNAVAILABLE"})
     failed["relationships"].append({"source_id": "S3", "relationship": "INDEPENDENT"})
     direct_vm.mock_llm("You are an evidence classifier", json.dumps(failed))
-    new_source = {"source_id": "S3", "url": "https://challenge.example.test/report", "role": "CHALLENGE",
+    new_source = {"source_id": "S3", "url": "https://challenge.example.org/report", "role": "CHALLENGE",
                   "retrieval_kind": "WEB_GET_TEXT", "declared_owner": "New publisher", "claim_ids": ["C1"]}
     result = json.loads(contract.challenge(cp, "C1", "SOURCE_FAILURE", "Unavailable independent evidence", json.dumps(new_source)))
     assert result["outcome"] == "PRESERVED_PRIOR"
-    receipt = json.loads(contract.get_receipt(result["receipt_id"]))
-    added = next(x for x in receipt["evidence_receipts"] if x["source_id"] == "S3")
-    assert added["claim_ids"] == ["C1"]
-    assert added["observation_status"] == "EXTERNAL_FAILURE"
-    assert receipt["prior_checkpoint_preserved"] is True
+    assert result["challenge_admitted"] is False
+    assert result["receipt_id"] == 0
     assert len(json.loads(contract.get_checkpoint(cp))["sources"]) == 2
+
+
+def test_attacker_added_syndicated_contradiction_preserves_checkpoint_and_budget(direct_deploy, direct_vm):
+    contract = setup_contract(direct_deploy, direct_vm)
+    cp = contract.create_checkpoint("subject", "title", "question", json.dumps(CLAIMS), json.dumps(SOURCES), 3600, 300, 2)
+    contract.resolve_checkpoint(cp)
+    direct_vm.clear_mocks()
+    direct_vm.mock_web(r"status\.example\.test", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"independent\.example\.net", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"attacker\.invalid", {"status": 200, "body": "Incident"})
+    attempted = json.loads(observation("SUPPORTED", "SUPPORTED", "CONSISTENT"))
+    attempted["claims"][0]["source_findings"].append({"source_id": "S3", "state": "CONTRADICTED"})
+    attempted["relationships"].append({"source_id": "S3", "relationship": "SYNDICATED"})
+    direct_vm.mock_llm("You are an evidence classifier", json.dumps(attempted))
+    new_source = {"source_id": "S3", "url": "https://attacker.invalid/report", "role": "CHALLENGE",
+                  "retrieval_kind": "WEB_GET_TEXT", "declared_owner": "Attacker", "claim_ids": ["C1"]}
+    before = json.loads(contract.get_checkpoint(cp))
+    result = json.loads(contract.challenge(cp, "C1", "ATTACK", "Forged contradiction", json.dumps(new_source)))
+    after = json.loads(contract.get_checkpoint(cp))
+    assert result["outcome"] == "PRESERVED_PRIOR"
+    assert result["challenge_admitted"] is False
+    assert result["receipt_id"] == 0
+    assert after["state_digest"] == before["state_digest"]
+    assert after["successor_id"] == 0
+    # Non-independent source attempts do not consume the finite challenge budget.
+    direct_vm.clear_mocks()
+    direct_vm.mock_web(r"status\.example\.test", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"independent\.example\.net", {"status": 200, "body": "Operational"})
+    direct_vm.mock_llm("You are an evidence classifier", observation("UNKNOWN", "UNKNOWN", "INSUFFICIENT_EVIDENCE"))
+    for _ in range(3):
+        assert json.loads(contract.challenge(cp, "C1", "RECHECK", "No added source", ""))["outcome"] == "PRESERVED_PRIOR"
 
 
 def test_composition_is_deterministic_and_paged(direct_deploy, direct_vm):

@@ -369,8 +369,36 @@ def _observed_cluster_count(observation: dict[str, Any], claim_id: str) -> int:
 
 def _claim_has_fork(observation: dict[str, Any], claim_id: str) -> bool:
     claim = next(c for c in observation["claims"] if c["claim_id"] == claim_id)
-    states = {f["state"] for f in claim["source_findings"]}
-    return "SUPPORTED" in states and "CONTRADICTED" in states
+    relations = {x["source_id"]: x for x in observation["relationships"]}
+    qualified: dict[str, set[str]] = {"SUPPORTED": set(), "CONTRADICTED": set()}
+    for finding in claim["source_findings"]:
+        relation = relations[finding["source_id"]]
+        if finding["state"] in qualified and relation["relationship"] == "INDEPENDENT":
+            qualified[finding["state"]].add(relation["cluster_id"])
+    # A fork is two opposing, independently qualified source clusters. A
+    # dependent/unknown source can neither create nor amplify a fork.
+    return any(supported_cluster != contradicted_cluster
+               for supported_cluster in qualified["SUPPORTED"]
+               for contradicted_cluster in qualified["CONTRADICTED"])
+
+
+def _claim_qualified_state(observation: dict[str, Any], claim_id: str) -> str:
+    """Derive claim polarity only from independent source findings."""
+    claim = next(c for c in observation["claims"] if c["claim_id"] == claim_id)
+    if claim["state"] in ("UNKNOWN", "UNAVAILABLE"):
+        return claim["state"]
+    relations = {x["source_id"]: x for x in observation["relationships"]}
+    states = {finding["state"] for finding in claim["source_findings"]
+              if relations[finding["source_id"]]["relationship"] == "INDEPENDENT"}
+    if "SUPPORTED" in states and "CONTRADICTED" in states:
+        return "UNKNOWN"  # conflicting pages in one cluster are not independent corroboration
+    if "SUPPORTED" in states:
+        return "SUPPORTED"
+    if "CONTRADICTED" in states:
+        return "CONTRADICTED"
+    if "UNAVAILABLE" in states:
+        return "UNAVAILABLE"
+    return "UNKNOWN"
 
 
 def _informative_cluster_count(observation: dict[str, Any]) -> int:
@@ -406,11 +434,12 @@ def _derive_state(observation: dict[str, Any], claims: list[dict[str, Any]], min
                 return ("BLOCKED", divergence) if by_id[dependency]["state"] == "CONTRADICTED" else ("INCONCLUSIVE", "INSUFFICIENT_EVIDENCE")
     for spec in claims:
         claim = by_id[spec["claim_id"]]
-        if claim["state"] in ("UNKNOWN", "UNAVAILABLE"):
+        qualified_state = _claim_qualified_state(observation, spec["claim_id"])
+        if qualified_state in ("UNKNOWN", "UNAVAILABLE"):
             return "INCONCLUSIVE", "INSUFFICIENT_EVIDENCE"
         if _observed_cluster_count(observation, spec["claim_id"]) < spec["required_independent_clusters"]:
             return "INCONCLUSIVE", "INSUFFICIENT_INDEPENDENCE"
-        if claim["state"] == "CONTRADICTED":
+        if qualified_state == "CONTRADICTED":
             return "BLOCKED", divergence
     return "SUPPORTED", divergence
 
@@ -486,6 +515,39 @@ def _bind_evidence(proposal: dict[str, Any], checkpoint_id: int,
             "render_hash", "content_hash", "normalization_version", "observation_status")})
         bound.append(item)
     return bound
+
+
+def _validated_evidence_receipts(raw: Any, sources: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Validate leader receipts against the exact bounded source manifest."""
+    if not isinstance(raw, list) or len(raw) != len(sources):
+        raise ValueError("evidence receipt cardinality")
+    expected = {s["source_id"]: s for s in sources}
+    seen: set[str] = set()
+    receipts = []
+    for item in raw:
+        if not isinstance(item, dict) or set(item) != {"source_id", "url", "retrieval_kind", "render_hash", "content_hash", "normalization_version", "observation_status"}:
+            raise ValueError("invalid evidence receipt fields")
+        sid = item.get("source_id")
+        source = expected.get(sid)
+        if source is None or sid in seen:
+            raise ValueError("unknown or duplicate evidence receipt")
+        seen.add(sid)
+        if item.get("url") != source["url"] or item.get("retrieval_kind") != source["retrieval_kind"]:
+            raise ValueError("evidence receipt source binding")
+        if item.get("normalization_version") != NORMALIZATION_VERSION:
+            raise ValueError("evidence receipt normalization version")
+        if item.get("observation_status") not in ("OBSERVED", "EXTERNAL_FAILURE"):
+            raise ValueError("invalid evidence receipt status")
+        for hash_name in ("render_hash", "content_hash"):
+            digest = item.get(hash_name)
+            if not isinstance(digest, str) or len(digest) != 64 or any(ch not in "0123456789abcdef" for ch in digest):
+                raise ValueError("invalid evidence receipt hash")
+        if source["retrieval_kind"] == "WEB_GET_TEXT" and item["render_hash"] != "0" * 64:
+            raise ValueError("GET receipt cannot claim a render hash")
+        if item["observation_status"] == "EXTERNAL_FAILURE" and item["content_hash"] != "0" * 64:
+            raise ValueError("failed evidence must use the empty-content hash")
+        receipts.append({k: item[k] for k in ("source_id", "url", "retrieval_kind", "render_hash", "content_hash", "normalization_version", "observation_status")})
+    return sorted(receipts, key=lambda x: x["source_id"])
 
 
 class RealityCheckpoint(gl.Contract):
@@ -610,16 +672,38 @@ class RealityCheckpoint(gl.Contract):
                 raise gl.vm.UserError("source bound")
             canonical = _canonical_sources(candidate_sources, {c["claim_id"] for c in prior["claims"]},
                 {c["claim_id"]: c["allowed_retrieval_kinds"] for c in prior["claims"]})
-            if claim_id not in canonical[-1]["claim_ids"]:
-                raise gl.vm.UserError("challenge source must bind challenged claim")
+            if canonical[-1]["claim_ids"] != [claim_id]:
+                raise gl.vm.UserError("challenge source must bind only the challenged claim")
+            new_source = canonical[-1]
+            old_claim_domains = {_source_cluster_id(s["url"]) for s in prior["sources"] if claim_id in s["claim_ids"]}
+            if _source_cluster_id(new_source["url"]) in old_claim_domains:
+                raise gl.vm.UserError("challenge source must use a new domain cluster")
             challenge_ctx["sources"] = canonical
         proposal = self._observe(prior, challenge_ctx)
+        if new_source_json:
+            relations = {r["source_id"]: r["relationship"] for r in proposal["relationships"]}
+            claim = next(c for c in proposal["claims"] if c["claim_id"] == claim_id)
+            new_finding = next(f for f in claim["source_findings"] if f["source_id"] == new_source["source_id"])
+            # A supplemental source is merely an attempted challenge until its
+            # observed finding is both available and validator-qualified as
+            # independent. Rejected attempts preserve the parent and do not
+            # consume its bounded challenge rounds.
+            qualified_total = _observed_cluster_count(proposal, claim_id)
+            if (relations.get(new_source["source_id"]) != "INDEPENDENT" or
+                    new_finding["state"] not in ("SUPPORTED", "CONTRADICTED") or
+                    qualified_total < next(c["required_independent_clusters"] for c in prior["claims"] if c["claim_id"] == claim_id)):
+                # Do not persist rejected permissionless submissions: otherwise
+                # an attacker can create unbounded storage receipts at will.
+                return _json({"checkpoint_id": checkpoint_id, "receipt_id": 0,
+                              "outcome": "PRESERVED_PRIOR", "challenge_admitted": False})
+            challenge_ctx["challenge_admitted"] = True
         state, divergence = _derive_state(proposal, prior["claims"], prior["minimum_independent_clusters"])
         if state in ("INCONCLUSIVE", "UNAVAILABLE"):
             attempt_id = self._write_nonfinal_attempt(prior, proposal, state, divergence, "CHALLENGE", now,
                                                       challenge_result="EXTERNAL_FAILURE" if state == "UNAVAILABLE" else "INCONCLUSIVE",
                                                       sources=challenge_ctx.get("sources", prior["sources"]))
-            self.challenge_attempts[u256(checkpoint_id)] = u256(prior_attempts + 1)
+            if not challenge_ctx.get("challenge_admitted", False):
+                self.challenge_attempts[u256(checkpoint_id)] = u256(prior_attempts + 1)
             return _json({"checkpoint_id": checkpoint_id, "receipt_id": attempt_id, "outcome": "PRESERVED_PRIOR"})
         result = "UPHELD"
         if state in ("DISPUTED", "BLOCKED", "DEGRADED"):
@@ -815,12 +899,16 @@ class RealityCheckpoint(gl.Contract):
                     return False
                 proposal_value = result.calldata
                 proposal_value = json.loads(proposal_value) if isinstance(proposal_value, str) else proposal_value
+                if not isinstance(proposal_value, dict) or set(proposal_value) != {"claims", "relationships", "divergence", "overall_delta", "external_failure", "evidence_receipts"}:
+                    return False
                 proposal_facts = {k: v for k, v in proposal_value.items() if k != "evidence_receipts"}
                 normalized_proposal = _normalize_observation(proposal_facts, claims, sources)
                 independent = _observe_sources(claims, sources, context)
                 independent_facts = {k: v for k, v in independent.items() if k != "evidence_receipts"}
                 normalized_local = _normalize_observation(independent_facts, claims, sources)
-                return normalized_proposal == normalized_local
+                proposal_receipts = _validated_evidence_receipts(proposal_value["evidence_receipts"], sources)
+                local_receipts = _validated_evidence_receipts(independent.get("evidence_receipts"), sources)
+                return normalized_proposal == normalized_local and proposal_receipts == local_receipts
             except Exception:
                 return False
         result = gl.vm.run_nondet(leader, validator)
@@ -828,7 +916,7 @@ class RealityCheckpoint(gl.Contract):
         parsed = json.loads(returned) if isinstance(returned, str) else returned
         clean = {k: v for k, v in parsed.items() if k != "evidence_receipts"}
         normalized = _normalize_observation(clean, claims, sources)
-        normalized["evidence_receipts"] = parsed.get("evidence_receipts", [])
+        normalized["evidence_receipts"] = _validated_evidence_receipts(parsed.get("evidence_receipts"), sources)
         return normalized
 
     def _finalize(self, cp: dict[str, Any], proposal: dict[str, Any], predecessor: int, reason: str) -> int:

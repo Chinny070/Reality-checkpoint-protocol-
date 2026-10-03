@@ -6,7 +6,8 @@
 $env:PYTHONUTF8='1'
 $env:PYTHONIOENCODING='utf-8'
 genvm-lint check contracts/reality_checkpoint.py
-python -m pytest tests -q
+python -m pytest tests/test_protocol.py -q
+gltest tests/direct/test_contract.py -q
 ```
 
 ## Studionet
@@ -43,6 +44,6 @@ Earlier source versions provided initial render, fork, supported-state, successo
 4. **Passed:** composition of supported checkpoints 4 and 5 yielded checkpoint 6, SUPPORTED/CONSISTENT, FRESH and usable.
 5. **Passed:** invalid future/self reference attempt finalized `checkpoint not found` without mutation; immutable composition accepts finalized children only.
 6. **Passed:** unavailable external source challenge preserved checkpoint 2 and bound the failed source to claim C1 in its attempt receipt.
-7. **Passed:** challenge recovery after failure created supported successor 9 from checkpoint 8; its portable certificate is FRESH and usability returned true.
+7. Initial `INCONCLUSIVE`/`UNAVAILABLE` is terminal for that checkpoint ID; create a replacement checkpoint to retry. A later challenge only applies to an already `FINALIZED` checkpoint.
 
 Record transaction hashes, lifecycle/finality, explorer URLs, contract address, source commit/blob hash, and deployed-source parity. Do not call an accepted transaction finalized without chain evidence.

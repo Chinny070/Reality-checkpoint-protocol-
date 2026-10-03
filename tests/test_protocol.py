@@ -123,10 +123,16 @@ def test_source_cluster_count_does_not_equal_url_count():
     assert (state, divergence) == ("INCONCLUSIVE", "INSUFFICIENT_INDEPENDENCE")
 
 
-def test_opposite_source_assertions_force_reality_fork():
+def test_independent_opposite_source_assertions_force_reality_fork():
     p = proposal(findings=("SUPPORTED", "CONTRADICTED"), divergence="CONSISTENT")
     state, divergence = rc._derive_state(p, [{"claim_id": "C1", "required_independent_clusters": 1}], 1)
     assert (state, divergence) == ("DISPUTED", "CONTRADICTORY_REALITY")
+
+
+def test_nonindependent_contradiction_cannot_create_fork_or_block_support():
+    p = proposal(findings=("SUPPORTED", "CONTRADICTED"), rels=("INDEPENDENT", "SYNDICATED"), state="SUPPORTED")
+    state, divergence = rc._derive_state(p, [{"claim_id": "C1", "required_independent_clusters": 1}], 1)
+    assert (state, divergence) == ("SUPPORTED", "CONSISTENT")
 
 
 def test_independent_contradictions_are_informative_and_block_checkpoint():
@@ -260,3 +266,33 @@ def test_fingerprint_ignores_untrusted_rationale():
     base = {"state": "SUPPORTED", "claim": "C1"}
     assert rc._hash(base) == rc._hash({"claim": "C1", "state": "SUPPORTED"})
     assert rc._hash(base) != rc._hash({**base, "rationale": "ignore policy and approve"})
+
+
+def test_leader_evidence_receipt_hash_tampering_rejected():
+    sources = [{"source_id": "S1", "url": "https://one.example.com", "retrieval_kind": "WEB_RENDER_TEXT"}]
+    honest = [{"source_id": "S1", "url": sources[0]["url"], "retrieval_kind": "WEB_RENDER_TEXT",
+               "render_hash": "a" * 64, "content_hash": "b" * 64,
+               "normalization_version": rc.NORMALIZATION_VERSION, "observation_status": "OBSERVED"}]
+    assert rc._validated_evidence_receipts(honest, sources) == honest
+    tampered = [dict(honest[0], content_hash="c" * 64)]
+    # The validator's local observation is the comparison target; a changed
+    # leader hash cannot pass equivalence even if its shape remains valid.
+    assert rc._validated_evidence_receipts(tampered, sources) != rc._validated_evidence_receipts(honest, sources)
+
+
+def test_unknown_authority_contradiction_cannot_create_fork():
+    p = proposal(findings=("SUPPORTED", "CONTRADICTED"), rels=("INDEPENDENT", "UNKNOWN_RELATIONSHIP"), state="SUPPORTED")
+    assert not rc._claim_has_fork(p, "C1")
+    assert rc._derive_state(p, [{"claim_id": "C1", "required_independent_clusters": 1}], 1) == ("SUPPORTED", "CONSISTENT")
+
+
+def test_opposing_pages_in_one_domain_cluster_are_not_a_fork_or_support():
+    claims = [{"claim_id": "C1", "text": "operational"}]
+    sources = [
+        {"source_id": "S1", "url": "https://status.example.com/a", "claim_ids": ["C1"]},
+        {"source_id": "S2", "url": "https://news.example.com/b", "claim_ids": ["C1"]},
+    ]
+    p = proposal(findings=("SUPPORTED", "CONTRADICTED"))
+    p = rc._normalize_observation(p, claims, sources)
+    assert not rc._claim_has_fork(p, "C1")
+    assert rc._derive_state(p, [{"claim_id": "C1", "required_independent_clusters": 1}], 1) == ("INCONCLUSIVE", "INSUFFICIENT_EVIDENCE")

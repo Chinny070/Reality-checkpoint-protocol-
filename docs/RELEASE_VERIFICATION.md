@@ -1,6 +1,6 @@
 # Release Verification Record
 
-This record distinguishes reproducible local checks from finalized live-chain evidence. No status is inferred from an accepted transaction alone. The **canonical candidate is source `386103fd…18f9cbf0`** below; earlier source sections are retained only as versioned history and their limitations are superseded only where current-source evidence explicitly closes them.
+This record distinguishes reproducible local checks from finalized live-chain evidence. No status is inferred from an accepted transaction alone. The previously deployed source `386103fd…18f9cbf0` is historical; the receipt-binding and challenge-admission fix in this working candidate requires a new deployment and source-specific live proofs before it can be canonical.
 
 ## Local candidate
 
@@ -8,15 +8,15 @@ This record distinguishes reproducible local checks from finalized live-chain ev
 |---|---|---|
 | Python syntax | PASS | `python -m py_compile contracts/reality_checkpoint.py tests/test_protocol.py tests/direct/test_contract.py` |
 | Offline preflight | PASS | `python scripts/preflight.py`; one canonical contract, 10 public API methods |
-| Direct Mode | PASS: 17/17 | `gltest tests/direct/test_contract.py -q` |
-| Protocol/adversarial tests | PASS: 23/23 | `python -m pytest tests/test_protocol.py -q` |
+| Direct Mode | PASS: 20/20 | `gltest tests/direct/test_contract.py -q` |
+| Protocol/adversarial tests | PASS: 27/27 | `python -m pytest tests/test_protocol.py -q` |
 | GenVM AST lint | PASS: 3 checks | `genvm-lint check contracts/reality_checkpoint.py` |
 | SDK semantic validation | PASS | `genvm-lint check contracts/reality_checkpoint.py`; GenVM v0.2.16 |
 | ABI/schema extraction | PASS: 10 methods (5 view, 5 write) | `genvm-lint schema contracts/reality_checkpoint.py` |
 | GenVM JSON-specific check | NOT RUN | Installed linter exposes no JSON-mode command |
 | Local-chain integration | NOT RUN | No local Studio/GLSim node was started |
 
-Plain pytest is not the Direct Mode runner for this installed package: it bypasses the required `gltest` storage fixture. The supported `gltest tests/direct/test_contract.py -q` command passes all 17 Direct tests. Protocol helpers run separately under pytest (23/23).
+Run the suites separately: `python -m pytest tests/test_protocol.py -q` for pure protocol logic and `gltest tests/direct/test_contract.py -q` for GenLayer Direct Mode. `python -m pytest tests -q` does not substitute for the Direct Mode runner and should not be used as the project-wide command.
 
 ## Source and Git
 
@@ -91,12 +91,13 @@ The current local tree also contains documentation and live transaction helper c
 | Live material semantic delta | GREEN on current source: two independent contradictions, CONTRADICTION delta, successor created |
 | Live composite checkpoint | GREEN on current source; future/self reference rejected; see qualification above |
 | Live transport failure preserving a prior checkpoint | GREEN on current source; failed source binds C1; parent unchanged |
-| Live challenge recovery | GREEN on current source: unavailable challenge preserved checkpoint 8; successful retry created supported successor 9, FRESH and usable |
+| Initial failed-checkpoint recovery | Intentional terminal semantics: initial INCONCLUSIVE/UNAVAILABLE checkpoints cannot be revived; create a replacement checkpoint |
+| Supplemental challenge admission | GREEN locally: unavailable or non-independent source preserves parent and does not consume challenge rounds; live proof required against corrected deployed source |
 | Live WEB_RENDER_TEXT | GREEN for actual rendered-source retrieval/evidence; WHO remains UNKNOWN, so no fully supported WHO claim |
 | GitHub push | Latest release audit documentation pushed; local and remote `main` heads matched at release close |
 | Public owner portfolio audit | GREEN within scope: 51 public repo names/descriptions reviewed, seven closest README reviews; Decision Memory overlap/rejection risk disclosed in `DECISION.md` |
 
-The project must not be marked frozen, finalized, or submission-ready while any required live proof above remains incomplete. A failure to meet a live gate is not relabeled as an external connectivity block when the chain is reachable and the attempt yielded a protocol outcome.
+The project must not be marked frozen, finalized, or submission-ready while any required live proof above remains incomplete. Older challenge-recovery transaction evidence applies only to the prior deployed source and does not establish behavior of the corrected source. A failure to meet a live gate is not relabeled as an external connectivity block when the chain is reachable and the attempt yielded a protocol outcome.
 
 ## Connectivity and wallet notes
 
