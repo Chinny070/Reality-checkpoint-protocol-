@@ -85,13 +85,14 @@ The current local tree also contains documentation and live transaction helper c
 | Current candidate tests, lint, schema | GREEN |
 | Current candidate Studionet deployment and source parity | GREEN |
 | Previous byte-identical source live web-render evidence | GREEN |
+| Current-source live WEB_RENDER_TEXT | GREEN for on-chain retrieval and observation receipts; example.com claim SUPPORTED, WHO claim UNKNOWN (no fully supported WHO claim asserted) |
 | Previous byte-identical source live Reality Fork Detection and unusable disputed certificate | GREEN |
 | Live no-change revalidation successor | GREEN on earlier source `fd0969dc…f7e2`; current source's material contradiction successor is independently GREEN |
 | Live material semantic delta | GREEN on current source: two independent contradictions, CONTRADICTION delta, successor created |
 | Live composite checkpoint | GREEN on current source; future/self reference rejected; see qualification above |
 | Live transport failure preserving a prior checkpoint | GREEN on current source; failed source binds C1; parent unchanged |
 | Live challenge recovery | GREEN on current source: unavailable challenge preserved checkpoint 8; successful retry created supported successor 9, FRESH and usable |
-| Live WEB_RENDER_TEXT | Retrieval/evidence observed on current source; WHO claim UNKNOWN, so no fully supported WHO render claim |
+| Live WEB_RENDER_TEXT | GREEN for actual rendered-source retrieval/evidence; WHO remains UNKNOWN, so no fully supported WHO claim |
 | GitHub push | Latest release audit documentation pushed; local and remote `main` heads matched at release close |
 | Public owner portfolio audit | GREEN within scope: 51 public repo names/descriptions reviewed, seven closest README reviews; Decision Memory overlap/rejection risk disclosed in `DECISION.md` |
 

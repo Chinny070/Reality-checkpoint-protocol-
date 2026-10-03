@@ -29,7 +29,7 @@ Downstream contracts consume `get_certificate` and `is_checkpoint_usable`; provi
 - Direct Mode pickling check: included and passed.
 - Current source `386103fd…18f9cbf0` is deployed with byte-identical parity. On this exact source, live semantic revalidation created a contradiction successor, unavailable challenge preserved its parent, render retrievals were recorded (WHO claim UNKNOWN), composition was fresh/usable, and a reality fork was disputed/unusable. Exact proof bounds and transaction evidence are in `docs/EVIDENCE.md`.
 
-## External gates not verified
+## Remaining review limits
 
 - Latest documentation and helper changes are pushed to GitHub `main`; the final remote-head SHA is verified in the release verification record.
 - Live future/self reference rejection finalized with `checkpoint not found`; immutable finalized-child DAG prevents back-edge insertion. On current source, an unavailable challenge preserved checkpoint 8 and a valid retry created supported successor 9, FRESH and usable.
@@ -44,7 +44,7 @@ Downstream contracts consume `get_certificate` and `is_checkpoint_usable`; provi
 - Local commit and blob IDs: recorded in `docs/RELEASE_VERIFICATION.md`.
 - Contract address / Explorer / deployment transaction / finality / source parity: recorded in `docs/RELEASE_VERIFICATION.md`.
 
-Only the specific live passes listed in `docs/EVIDENCE.md` are claimed. The overall submission is not finalized while required live gates remain incomplete.
+Only the specific live passes listed in `docs/EVIDENCE.md` are claimed. The required local, deployment, source-parity, live protocol, public owner-audit, and GitHub push gates are verified. The live WEB_RENDER_TEXT transaction observed both pages, but the WHO claim resolved UNKNOWN; this is recorded as a limitation rather than a supported fact. The closest portfolio collision is Decision Memory Protocol and is candidly differentiated in `DECISION.md`.
 
 ## Portal description draft (verified local facts only)
 
