@@ -54,7 +54,7 @@ GenVM semantic validation uses the version resolved by `genvm-lint`; the release
 
 ## Status
 
-The current steward-fix candidate passes 21 Direct Mode tests, 27 protocol/adversarial tests, GenVM lint (3 checks), the ten-method schema, and preflight. It enforces a three-attempt bound over persisted nonfinal challenge receipts, including an admitted supplemental source whose checkpoint remains inconclusive due to another unresolved claim. This candidate is not yet pushed or deployed; do not attribute earlier live evidence to it. The prior deployed candidate and its source-versioned evidence are recorded in [docs/RELEASE_VERIFICATION.md](docs/RELEASE_VERIFICATION.md).
+The current steward-fix candidate is pushed to GitHub and passes 21 Direct Mode tests, 27 protocol/adversarial tests, GenVM lint (3 checks), the ten-method schema, and preflight. It enforces a three-attempt bound over persisted nonfinal challenge receipts, including an admitted supplemental source whose checkpoint remains inconclusive due to another unresolved claim. This candidate is not yet deployed; do not attribute earlier live evidence to it. The prior deployed candidate and its source-versioned evidence are recorded in [docs/RELEASE_VERIFICATION.md](docs/RELEASE_VERIFICATION.md).
 
 ## Repository
 

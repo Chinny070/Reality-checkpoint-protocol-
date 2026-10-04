@@ -27,11 +27,11 @@ Downstream contracts consume `get_certificate` and `is_checkpoint_usable`; provi
 - GenVM SDK semantic validation: passed with GenVM v0.2.16.
 - Schema: extracted; 10 methods (5 read-only, 5 write).
 - Direct Mode pickling check: included and passed.
-- The steward-fix source `26ca41afe295bdacfded56976d99dfde3839a62d150c5b6a35e88f645740f1ee` passes all local gates at commit `cae50240f47e6e035fa577b122aad93b9c4f0fbf`. It is not yet deployed or source-parity verified. The previous deployed source remains `2ca8e459…788a37d` at `0xbEFbE69a1723E637691a7c2De76b5d01D81a41A2`; its live proofs must not be attributed to this steward-fix candidate. Deployment is waiting on Studionet wallet unlock and source-specific live proof.
+- The steward-fix source `26ca41afe295bdacfded56976d99dfde3839a62d150c5b6a35e88f645740f1ee` passes all local gates at commit `56b1dafbe9d0ffd2649708b0037b6d2d953d57b1` and is pushed to GitHub. It is not yet deployed or source-parity verified. The previous deployed source remains `2ca8e459…788a37d` at `0xbEFbE69a1723E637691a7c2De76b5d01D81a41A2`; its live proofs must not be attributed to this steward-fix candidate. Deployment is waiting on Studionet wallet unlock and source-specific live proof.
 
 ## Remaining review limits
 
-- The steward-fix candidate and updated release records are not yet pushed.
+- The steward-fix implementation is pushed; the release record update will be pushed in the follow-up documentation commit.
 - A cross-domain hostile challenge attempt finalized MAJORITY_DISAGREE; it is explicitly excluded from passing evidence. The live same-domain challenge rejection passed.
 - Owner-portfolio audit: reviewed all 51 public API-visible repositories (names/descriptions) and README-level detail for the seven closest overlaps. Decision Memory Protocol is the closest neighboring project; see `DECISION.md` for the substantive scope distinction and explicit rejection risk.
 - Ecosystem collision search: compared current official GenLayer docs and several public projects, including Intelligent Oracle, Lumen, and Internetcourt. This is a bounded collision assessment, not a novelty guarantee or coverage of private/unindexed projects.
@@ -44,7 +44,7 @@ Downstream contracts consume `get_certificate` and `is_checkpoint_usable`; provi
 - Local commit and blob IDs: recorded in `docs/RELEASE_VERIFICATION.md`.
 - Contract address / Explorer / deployment transaction / finality / source parity: recorded in `docs/RELEASE_VERIFICATION.md`.
 
-Only the specific live passes listed in `docs/EVIDENCE.md` are claimed. For the steward-fix source, local tests/lint/schema are green; GitHub push, deployment/source parity, and live proof remain pending. Older deployment, receipt-consensus, hostile-source, render, revalidation, composition, and fork evidence is source-versioned and is not represented as proof for this candidate. The historical WEB_RENDER_TEXT transaction observed both pages, but the WHO claim resolved UNKNOWN; this remains a limitation. The closest portfolio collision is Decision Memory Protocol and is candidly differentiated in `DECISION.md`.
+Only the specific live passes listed in `docs/EVIDENCE.md` are claimed. For the steward-fix source, local tests/lint/schema and GitHub push are green; deployment/source parity and live proof remain pending. Older deployment, receipt-consensus, hostile-source, render, revalidation, composition, and fork evidence is source-versioned and is not represented as proof for this candidate. The historical WEB_RENDER_TEXT transaction observed both pages, but the WHO claim resolved UNKNOWN; this remains a limitation. The closest portfolio collision is Decision Memory Protocol and is candidly differentiated in `DECISION.md`.
 
 ## Portal description draft (verified local facts only)
 
