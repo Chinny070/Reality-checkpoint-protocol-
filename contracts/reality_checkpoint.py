@@ -702,8 +702,11 @@ class RealityCheckpoint(gl.Contract):
             attempt_id = self._write_nonfinal_attempt(prior, proposal, state, divergence, "CHALLENGE", now,
                                                       challenge_result="EXTERNAL_FAILURE" if state == "UNAVAILABLE" else "INCONCLUSIVE",
                                                       sources=challenge_ctx.get("sources", prior["sources"]))
-            if not challenge_ctx.get("challenge_admitted", False):
-                self.challenge_attempts[u256(checkpoint_id)] = u256(prior_attempts + 1)
+            # Every persisted nonfinal challenge receipt consumes one bounded
+            # round, whether or not it included an admitted supplemental source.
+            # This prevents an admitted source plus an unresolved claim from
+            # creating unbounded receipt storage through repeated retries.
+            self.challenge_attempts[u256(checkpoint_id)] = u256(prior_attempts + 1)
             return _json({"checkpoint_id": checkpoint_id, "receipt_id": attempt_id, "outcome": "PRESERVED_PRIOR"})
         result = "UPHELD"
         if state in ("DISPUTED", "BLOCKED", "DEGRADED"):

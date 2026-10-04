@@ -14,6 +14,7 @@ Reality Checkpoint Protocol is a reusable GenLayer primitive. A creator fixes a 
 - Composes finalized child checkpoints using deterministic child-state policy.
 - Exposes a portable JSON certificate and `is_checkpoint_usable` view.
 - Records challenges and successor lineage without rewriting prior finalized receipts.
+- Bounds persisted inconclusive challenge attempts: rejected supplemental sources persist nothing, while every persisted nonfinal attempt consumes one of three rounds.
 
 ## Evidence-to-certificate flow
 
@@ -53,7 +54,7 @@ GenVM semantic validation uses the version resolved by `genvm-lint`; the release
 
 ## Status
 
-Corrected local gates are green: 20 Direct Mode tests, 27 protocol/adversarial tests, GenVM lint (3 checks), ten-method schema, and preflight. Corrected source `2ca8e45982d88184b845df6441a9e6c2667af9ecc2bed88754964d8bb788a37d` is deployed at `0xbEFbE69a1723E637691a7c2De76b5d01D81a41A2` with byte-identical 59,431-byte parity. On this source, a live supported checkpoint's validator-bound evidence receipts were verified; an attacker-submitted contradictory source on an already represented domain was rejected by all validators, leaving the supported checkpoint unchanged and usable. Older live semantic-delta, render, composition, and fork proofs apply to their recorded source versions only. A cross-domain hostile challenge ended in MAJORITY_DISAGREE and is not claimed as a pass. See [docs/RELEASE_VERIFICATION.md](docs/RELEASE_VERIFICATION.md) for exact hashes and proof limits.
+The current steward-fix candidate passes 21 Direct Mode tests, 27 protocol/adversarial tests, GenVM lint (3 checks), the ten-method schema, and preflight. It enforces a three-attempt bound over persisted nonfinal challenge receipts, including an admitted supplemental source whose checkpoint remains inconclusive due to another unresolved claim. This candidate is not yet pushed or deployed; do not attribute earlier live evidence to it. The prior deployed candidate and its source-versioned evidence are recorded in [docs/RELEASE_VERIFICATION.md](docs/RELEASE_VERIFICATION.md).
 
 ## Repository
 

@@ -9,7 +9,7 @@
 - **RC7 — Reality fork preservation:** opposite supported/contradicted source findings force `DISPUTED` regardless of the model's divergence label.
 - **RC8 — Composition determinism:** composite state derives from child certificates and fixed policy fields.
 - **RC9 — Cycle freedom:** claim dependencies and composite ancestry are bounded and cycle-checked.
-- **RC10 — Bounded work:** definitions, strings, claims, sources, composition depth/width, page sizes, and decisive or inconclusive challenge attempts have explicit caps.
+- **RC10 — Bounded work:** definitions, strings, claims, sources, composition depth/width, page sizes, and challenge attempts have explicit caps. Rejected supplemental submissions persist no receipt; each persisted nonfinal challenge receipt consumes one of the three available rounds.
 - **RC11 — Lineage integrity:** successor creation marks the prior checkpoint superseded but does not change its receipt or state digest.
 - **RC12 — Freshness honesty:** timestamps and windows are deterministic; a fresh contradiction remains a contradiction.
 - **RC13 — Challenge immutability:** a challenge creates a new consensus observation and, when decisive, a successor; it never rewrites the challenged receipt.

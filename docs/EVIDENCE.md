@@ -1,5 +1,11 @@
 # Evidence and Receipt Model
 
+## Steward-requested persisted-attempt bound (2026-10-04)
+
+The current local candidate (`contracts/reality_checkpoint.py`, SHA-256 `26ca41afe295bdacfded56976d99dfde3839a62d150c5b6a35e88f645740f1ee`) increments a per-checkpoint challenge-attempt counter whenever it persists a nonfinal challenge receipt. This includes the case where an added source is admitted for the challenged claim but another claim leaves the overall result inconclusive. After three persisted inconclusive attempts, a further attempt reverts before storage. A supplemental source rejected for domain, availability, independence, claim-binding, or floor reasons still writes no receipt and consumes no attempt.
+
+Direct Mode regression: `test_admitted_supplemental_source_with_unresolved_claim_persists_and_consumes_bounded_attempt` passes. It verifies S3 is claim-bound to C1 in the persisted receipt while C2 remains unresolved, the prior checkpoint digest and successor pointer are unchanged, and the persisted-attempt bound is enforced. This is local evidence only. The Studionet deployment command for this source reached wallet decryption and reported `Invalid password. Attempt 2/3`; no new deployment or live proof is claimed yet.
+
 Each source observation is bound to checkpoint and source definitions, retrieval kind, normalized content hash, render hash (or all-zero value for non-render retrieval), normalization version, and observation status. Evidence identity excludes model rationale.
 
 Every validator independently retrieves evidence and compares receipt source binding, retrieval kind, render/content hashes, normalization version, and observation status against its own fetch before those hashes enter a consensus-bound evidence root. Dynamic content that changes between observations therefore fails equivalence. Classifier rationale is not part of evidence identity.

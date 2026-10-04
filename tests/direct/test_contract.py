@@ -308,6 +308,109 @@ def test_failed_challenge_receipt_binds_added_source_to_claim(direct_deploy, dir
     assert len(json.loads(contract.get_checkpoint(cp))["sources"]) == 2
 
 
+def test_admitted_supplemental_source_with_unresolved_claim_persists_and_consumes_bounded_attempt(direct_deploy, direct_vm):
+    """A persisted inconclusive challenge receipt must spend one finite round."""
+    claims = json.loads(json.dumps(CLAIMS)) + [{
+        "claim_id": "C2", "text": "A separate critical state is established",
+        "criticality": "CRITICAL", "required_sources": 2,
+        "required_independent_clusters": 2,
+    }]
+    sources = json.loads(json.dumps(SOURCES)) + [
+        {"source_id": "S4", "url": "https://claim-two.example.net", "role": "STATUS",
+         "retrieval_kind": "WEB_GET_TEXT", "declared_owner": "Publisher four", "claim_ids": ["C2"]},
+        {"source_id": "S5", "url": "https://claim-two.example.org", "role": "CORROBORATING",
+         "retrieval_kind": "WEB_GET_TEXT", "declared_owner": "Publisher five", "claim_ids": ["C2"]},
+    ]
+    contract = setup_contract(direct_deploy, direct_vm)
+    cp = contract.create_checkpoint("subject", "title", "question", json.dumps(claims), json.dumps(sources), 3600, 300, 2)
+    initial = {
+        "claims": [
+            {"claim_id": "C1", "state": "SUPPORTED", "delta": "UNCHANGED", "source_findings": [
+                {"source_id": "S1", "state": "SUPPORTED"}, {"source_id": "S2", "state": "SUPPORTED"}]},
+            {"claim_id": "C2", "state": "SUPPORTED", "delta": "UNCHANGED", "source_findings": [
+                {"source_id": "S4", "state": "SUPPORTED"}, {"source_id": "S5", "state": "SUPPORTED"}]},
+        ],
+        "relationships": [
+            {"source_id": source_id, "relationship": "INDEPENDENT", "cluster_id": cluster}
+            for source_id, cluster in (("S1", "A"), ("S2", "B"), ("S4", "D"), ("S5", "E"))],
+        "divergence": "CONSISTENT", "overall_delta": "UNCHANGED", "external_failure": False,
+    }
+    direct_vm.clear_mocks()
+    direct_vm.mock_web(r"status\.example\.test", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"independent\.example\.net", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"claim-two\.example\.net", {"status": 200, "body": "Available"})
+    direct_vm.mock_web(r"claim-two\.example\.org", {"status": 200, "body": "Available"})
+    direct_vm.mock_llm("You are an evidence classifier", json.dumps(initial))
+    contract.resolve_checkpoint(cp)
+    direct_vm.clear_mocks()
+    direct_vm.mock_web(r"status\.example\.test", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"independent\.example\.net", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"claim-two\.example\.net", {"status": 200, "body": "Available"})
+    direct_vm.mock_web(r"claim-two\.example\.org", {"status": 200, "body": "Available"})
+    direct_vm.mock_web(r"challenge\.example\.org", {"status": 200, "body": "Additional evidence"})
+    # The supplemental source is available and independent for C1, but C2
+    # remains unresolved, making the whole checkpoint inconclusive. Receipt
+    # must retain the source-to-claim binding.
+    partial = {
+        "claims": [
+            {"claim_id": "C1", "state": "SUPPORTED", "delta": "UNCHANGED", "source_findings": [
+                {"source_id": "S1", "state": "SUPPORTED"}, {"source_id": "S2", "state": "SUPPORTED"},
+                {"source_id": "S3", "state": "SUPPORTED"}]},
+            {"claim_id": "C2", "state": "UNKNOWN", "delta": "UNAVAILABLE", "source_findings": [
+                {"source_id": "S4", "state": "UNKNOWN"}, {"source_id": "S5", "state": "UNKNOWN"}]},
+        ],
+        "relationships": [
+            {"source_id": "S1", "relationship": "INDEPENDENT", "cluster_id": "A"},
+            {"source_id": "S2", "relationship": "INDEPENDENT", "cluster_id": "B"},
+            {"source_id": "S3", "relationship": "INDEPENDENT", "cluster_id": "C"},
+            {"source_id": "S4", "relationship": "INDEPENDENT", "cluster_id": "D"},
+            {"source_id": "S5", "relationship": "INDEPENDENT", "cluster_id": "E"},
+        ],
+        "divergence": "INSUFFICIENT_EVIDENCE", "overall_delta": "UNCHANGED", "external_failure": False,
+    }
+    direct_vm.mock_llm("You are an evidence classifier", json.dumps(partial))
+    new_source = {"source_id": "S3", "url": "https://challenge.example.org/report", "role": "CHALLENGE",
+                  "retrieval_kind": "WEB_GET_TEXT", "declared_owner": "New publisher", "claim_ids": ["C1"]}
+
+    before = json.loads(contract.get_checkpoint(cp))
+    result = json.loads(contract.challenge(cp, "C1", "RECHECK", "Additional source leaves another required observation unresolved", json.dumps(new_source)))
+    after = json.loads(contract.get_checkpoint(cp))
+    receipt = json.loads(contract.get_receipt(result["receipt_id"]))
+    assert result["outcome"] == "PRESERVED_PRIOR"
+    assert result["receipt_id"] > 0
+    assert receipt["attempt_status"] == "INCONCLUSIVE"
+    added_receipts = [e for e in receipt["evidence_receipts"] if e["source_id"] == "S3"]
+    assert len(added_receipts) == 1
+    assert added_receipts[0]["claim_ids"] == ["C1"]
+    assert after["state_digest"] == before["state_digest"]
+    assert after["successor_id"] == 0
+
+    # Two further persisted inconclusive receipts fill MAX_CHALLENGES; the
+    # next call must fail before it can write another receipt.
+    retry = {
+        "claims": [
+            {"claim_id": "C1", "state": "UNKNOWN", "delta": "UNCHANGED", "source_findings": [
+                {"source_id": "S1", "state": "UNKNOWN"}, {"source_id": "S2", "state": "UNKNOWN"}]},
+            {"claim_id": "C2", "state": "UNKNOWN", "delta": "UNCHANGED", "source_findings": [
+                {"source_id": "S4", "state": "UNKNOWN"}, {"source_id": "S5", "state": "UNKNOWN"}]},
+        ],
+        "relationships": [
+            {"source_id": source_id, "relationship": "INDEPENDENT", "cluster_id": cluster}
+            for source_id, cluster in (("S1", "A"), ("S2", "B"), ("S4", "D"), ("S5", "E"))],
+        "divergence": "INSUFFICIENT_EVIDENCE", "overall_delta": "UNCHANGED", "external_failure": False,
+    }
+    direct_vm.clear_mocks()
+    direct_vm.mock_web(r"status\.example\.test", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"independent\.example\.net", {"status": 200, "body": "Operational"})
+    direct_vm.mock_web(r"claim-two\.example\.net", {"status": 200, "body": "Available"})
+    direct_vm.mock_web(r"claim-two\.example\.org", {"status": 200, "body": "Available"})
+    direct_vm.mock_llm("You are an evidence classifier", json.dumps(retry))
+    for _ in range(2):
+        assert json.loads(contract.challenge(cp, "C1", "RECHECK", "No new source", ""))["outcome"] == "PRESERVED_PRIOR"
+    with pytest.raises(Exception, match="challenge round limit"):
+        contract.challenge(cp, "C1", "RECHECK", "Beyond the bounded persisted-attempt limit", "")
+
+
 def test_attacker_added_syndicated_contradiction_preserves_checkpoint_and_budget(direct_deploy, direct_vm):
     contract = setup_contract(direct_deploy, direct_vm)
     cp = contract.create_checkpoint("subject", "title", "question", json.dumps(CLAIMS), json.dumps(SOURCES), 3600, 300, 2)
