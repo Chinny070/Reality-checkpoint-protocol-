@@ -27,7 +27,7 @@ Run the suites separately: `python -m pytest tests/test_protocol.py -q` for pure
 | Steward-fix candidate contract SHA-256 | `26ca41afe295bdacfded56976d99dfde3839a62d150c5b6a35e88f645740f1ee` |
 | Steward-fix candidate Git blob | `1ecd8894b4299a7586452a0dc151e3bfa5abe0f2` |
 | Steward-fix implementation commit | `56b1dafbe9d0ffd2649708b0037b6d2d953d57b1` |
-| Matching push | PASS: pushed to `origin/main`; remote-head equality to be rechecked after release record update |
+| Matching push | PASS: implementation and release record are pushed; verified `origin/main` at `4b78cf2813ccb7224f3ad3d25a3d519969244511` |
 | Historical deployed source hashes | `386103fd…18f9cbf0`, `fd0969dc…f7e2`, and earlier sources |
 | Corrected source deployment parity | PASS: byte-identical, 59,431 bytes |
 | Previous evidence-record commit | `37f670b1fc62a9fba39344ca71195e6c32dd4f77` |
