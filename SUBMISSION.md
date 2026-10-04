@@ -31,7 +31,7 @@ Downstream contracts consume `get_certificate` and `is_checkpoint_usable`; provi
 
 ## Remaining review limits
 
-- The steward-fix implementation and release record are pushed; `origin/main` was verified at `4b78cf2813ccb7224f3ad3d25a3d519969244511`.
+- The steward-fix implementation and release record are pushed; local and remote `main` equality was verified after push.
 - A cross-domain hostile challenge attempt finalized MAJORITY_DISAGREE; it is explicitly excluded from passing evidence. The live same-domain challenge rejection passed.
 - Owner-portfolio audit: reviewed all 51 public API-visible repositories (names/descriptions) and README-level detail for the seven closest overlaps. Decision Memory Protocol is the closest neighboring project; see `DECISION.md` for the substantive scope distinction and explicit rejection risk.
 - Ecosystem collision search: compared current official GenLayer docs and several public projects, including Intelligent Oracle, Lumen, and Internetcourt. This is a bounded collision assessment, not a novelty guarantee or coverage of private/unindexed projects.
