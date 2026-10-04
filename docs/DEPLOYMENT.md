@@ -24,6 +24,14 @@ python scripts/live_verify.py --address 0x... --deployment-tx 0x...
 
 It writes the raw lifecycle result, schema method comparison, and local/deployed source SHA-256 values to ignored `artifacts/live-verification.json`. It exits nonzero when source bytes or schema methods differ. It does not deploy or create protocol checkpoints; the live transaction matrix still requires independently recorded write transactions and Explorer evidence.
 
+## Steward-fix deployment (2026-10-04)
+
+- Canonical current source: `contracts/reality_checkpoint.py`, SHA-256 `26ca41afe295bdacfded56976d99dfde3839a62d150c5b6a35e88f645740f1ee`, Git blob `1ecd8894b4299a7586452a0dc151e3bfa5abe0f2`.
+- Contract: [`0x31d3981d162BcE0E91785E9eCAa2c957639B7764`](https://explorer-studio.genlayer.com/address/0x31d3981d162BcE0E91785E9eCAa2c957639B7764).
+- Deployment: [`0xf4f79ac806a81678c8bbc80384a2efd364cc466d71f3c12bbbd8085c18faca6a`](https://explorer-studio.genlayer.com/tx/0xf4f79ac806a81678c8bbc80384a2efd364cc466d71f3c12bbbd8085c18faca6a), FINALIZED, GenVM SUCCESS, MAJORITY_AGREE; all five validators agreed.
+- SDK-exported source is 59,671 bytes and byte-identical to the local source. The deployed schema has the ten expected methods.
+- Current-source proof transactions and their exact limits are recorded in [EVIDENCE.md](EVIDENCE.md). The admitted-source plus unresolved-second-claim attempt-accounting behavior is verified by Direct Mode regression; it is not claimed as a live transaction.
+
 ## Previous Studionet deployment (2026-10-02)
 
 Historical deployment (source hash `dcf3c321…d4fda7`) verified in Explorer:

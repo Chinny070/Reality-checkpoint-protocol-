@@ -1,6 +1,6 @@
 # Release Verification Record
 
-This record distinguishes reproducible local checks from finalized live-chain evidence. No status is inferred from an accepted transaction alone. The steward-fix candidate adds bounded accounting for every persisted inconclusive challenge attempt. Its local tests, lint, and schema gates are green; it is not yet the deployed source. A new Studionet deployment and source-specific live proof remain pending.
+This record distinguishes reproducible local checks from finalized live-chain evidence. No status is inferred from an accepted transaction alone. The steward-fix candidate adds bounded accounting for every persisted inconclusive challenge attempt. Its local tests, lint, schema, Studionet deployment, byte parity, supported-parent receipt, and hostile same-domain challenge rejection are verified. The exact admitted-supplemental-source plus unresolved-second-claim case is proven locally; no live transaction is claimed for that exact case.
 
 ## Local candidate
 
@@ -28,6 +28,7 @@ Run the suites separately: `python -m pytest tests/test_protocol.py -q` for pure
 | Steward-fix candidate Git blob | `1ecd8894b4299a7586452a0dc151e3bfa5abe0f2` |
 | Steward-fix implementation commit | `56b1dafbe9d0ffd2649708b0037b6d2d953d57b1` |
 | Matching push | PASS: implementation and updated release records are pushed; local/remote `main` equality was verified after push |
+| Latest documentation commit before this evidence update | `ff6d22d502a0942c42c6bb799a9a82aa8c1d5c0e` |
 | Historical deployed source hashes | `386103fd…18f9cbf0`, `fd0969dc…f7e2`, and earlier sources |
 | Previously deployed corrected source parity (`2ca8e459…788a37d`) | PASS: byte-identical, 59,431 bytes; does not establish parity for the steward-fix source |
 | Previous evidence-record commit | `37f670b1fc62a9fba39344ca71195e6c32dd4f77` |
@@ -37,12 +38,14 @@ Run the suites separately: `python -m pytest tests/test_protocol.py -q` for pure
 
 | Field | Verified value |
 |---|---|
-| Corrected contract | `0xbEFbE69a1723E637691a7c2De76b5d01D81a41A2` |
-| Corrected deployment tx | `0xff8d674e59804edeeadf085a2fc122d5726e9068cc7c217a538ec1742ca88bdd` |
-| Corrected Explorer | <https://explorer-studio.genlayer.com/tx/0xff8d674e59804edeeadf085a2fc122d5726e9068cc7c217a538ec1742ca88bdd> |
+| Steward-fix contract | `0x31d3981d162BcE0E91785E9eCAa2c957639B7764` |
+| Steward-fix deployment tx | `0xf4f79ac806a81678c8bbc80384a2efd364cc466d71f3c12bbbd8085c18faca6a` |
+| Steward-fix Explorer | <https://explorer-studio.genlayer.com/tx/0xf4f79ac806a81678c8bbc80384a2efd364cc466d71f3c12bbbd8085c18faca6a> |
 | Lifecycle | `FINALIZED` |
 | GenVM | `SUCCESS` |
 | Consensus | `MAJORITY_AGREE` |
+
+Exported source SHA-256 equals the local contract hash exactly (`26ca41afe295bdacfded56976d99dfde3839a62d150c5b6a35e88f645740f1ee`), 59,671 bytes. The deployed schema exposes the same ten expected methods.
 
 Historical deployments are listed in the source-versioned evidence below. For the corrected source, Python JSON-RPC returned HTTP 403; exact SDK/CLI export and schema reads succeeded and source parity was byte-identical.
 
@@ -100,15 +103,18 @@ The Python JSON-RPC source verifier returned HTTP 403. The authenticated SDK exp
 | Admitted supplemental source with another unresolved claim | PASS locally: Direct Mode regression verifies claim-bound receipt persistence, unchanged parent state, no successor, and challenge budget exhaustion. |
 | Direct Mode / protocol tests | PASS: 21 / 27 |
 | Lint / schema / preflight | PASS: 3 lint checks, 10 methods, single canonical contract |
-| Studionet deployment and parity | PENDING; deployment command stopped at wallet keystore decryption (`Invalid password. Attempt 2/3`). |
-| Live admitted-source/unresolved-claim bounded-attempt proof | PENDING deployment of this source |
+| Studionet deployment and parity | PASS: FINALIZED / MAJORITY_AGREE; 59,671-byte deployed export is byte-identical |
+| Live supported parent + receipt | PASS: checkpoint 2 SUPPORTED / CONSISTENT / FRESH; receipt facts verified; usable true |
+| Live hostile same-domain challenge | PASS: all validators agreed on deterministic domain-cluster rejection; parent unchanged, no receipt or challenge-count increase, remains usable |
+| Exact admitted-source/unresolved-second-claim live proof | NOT CLAIMED; exact scenario is covered by the passing Direct Mode regression |
+| Separate two-claim live diagnostic | NOT A PASS: resolve finalized MAJORITY_DISAGREE and checkpoint remained unfinalized |
 
 ## Submission-gate status
 
 | Gate | Status |
 |---|---|
 | Steward-fix candidate tests, lint, schema | GREEN: 21 Direct Mode + 27 protocol tests; GenVM lint 3 checks; 10-method schema |
-| Steward-fix candidate Studionet deployment and source parity | PENDING wallet unlock; older deployed candidate parity remains verified for its own hash |
+| Steward-fix candidate Studionet deployment and source parity | GREEN: current contract `0x31d3981d162BcE0E91785E9eCAa2c957639B7764`; exact 59,671-byte match |
 | Corrected-source live validator-bound receipt proof | GREEN: on-chain receipt facts and evidence root are included in the accepted consensus result |
 | Corrected-source live hostile same-domain contradictory challenge | GREEN: deterministic rejection; parent unchanged, supported, usable |
 | Cross-domain hostile challenge live consensus | NOT GREEN: finalized MAJORITY_DISAGREE; excluded from passing evidence |
@@ -120,12 +126,12 @@ The Python JSON-RPC source verifier returned HTTP 403. The authenticated SDK exp
 | Prior-source live composite checkpoint | GREEN on source `386103fd…18f9cbf0`; future/self reference rejected; see qualification above |
 | Prior-source live transport failure preserving a checkpoint | GREEN on source `386103fd…18f9cbf0`; failed source binds C1; parent unchanged |
 | Initial failed-checkpoint recovery | Intentional terminal semantics: initial INCONCLUSIVE/UNAVAILABLE checkpoints cannot be revived; create a replacement checkpoint |
-| Supplemental challenge admission | Local safety and bounded persisted-attempt accounting GREEN; steward-specific live proof PENDING deployment of steward-fix source |
+| Supplemental challenge admission | Local safety and bounded persisted-attempt accounting GREEN; same-domain hostile rejection verified live. The exact admitted-source/unresolved-second-claim scenario is only claimed locally. |
 | Live WEB_RENDER_TEXT | GREEN for actual rendered-source retrieval/evidence; WHO remains UNKNOWN, so no fully supported WHO claim |
 | GitHub push | GREEN: corrected implementation and release records pushed; final local/remote `main` heads were verified equal |
 | Public owner portfolio audit | GREEN within scope: 51 public repo names/descriptions reviewed, seven closest README reviews; Decision Memory overlap/rejection risk disclosed in `DECISION.md` |
 
-The project must not be marked frozen, finalized, or submission-ready while any required live proof above remains incomplete. Older challenge-recovery transaction evidence applies only to the prior deployed source and does not establish behavior of the corrected source. A failure to meet a live gate is not relabeled as an external connectivity block when the chain is reachable and the attempt yielded a protocol outcome.
+Historical transaction proofs remain source-versioned and are not transferred to the steward-fix source. The separate two-claim MAJORITY_DISAGREE diagnostic is not a pass and is disclosed above.
 
 ## Connectivity and wallet notes
 
